@@ -46,6 +46,7 @@ ARCHITECTURE behavior OF tb_pauloB IS
 	signal instruction : unsigned(17 downto 0) := (others => '0');
 	signal instruction_slv : std_logic_vector(17 downto 0) := (others => '0');
 	signal in_port : unsigned(7 downto 0) := (others => '0');
+	signal in_port_del : unsigned(7 downto 0) := (others => '0');
 	signal interrupt : std_logic := '0';
 
 	--Outputs
@@ -150,12 +151,17 @@ BEGIN
 			wait;
 		end process;
 	
+		process begin
+			wait for 10 ns;
+			in_port <= in_port_del;
+		end process;
+		
 		data_in_proc : process (port_id) begin
 			case (port_id) is
 				when x"05" => 
-					in_port <= x"F3";
+					in_port_del <= x"F3";
 				when others =>
-					in_port <= port_id;
+					in_port_del <= port_id;
 			end case;
 		end process data_in_proc;
 	
