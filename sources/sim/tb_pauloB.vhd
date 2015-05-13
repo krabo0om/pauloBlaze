@@ -67,7 +67,7 @@ ARCHITECTURE behavior OF tb_pauloB IS
    signal pre_s : debug_signals;
    signal post_s : debug_signals;
    signal prog_mem_en : std_logic;
-   
+      
    constant real_prog : boolean := true;
  
 BEGIN 
@@ -149,6 +149,15 @@ BEGIN
 			
 			wait;
 		end process;
+	
+		data_in_proc : process (port_id) begin
+			case (port_id) is
+				when x"05" => 
+					in_port <= x"F3";
+				when others =>
+					in_port <= port_id;
+			end case;
+		end process data_in_proc;
 	
 	end generate real_program;
 

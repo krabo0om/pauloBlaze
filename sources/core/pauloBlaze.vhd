@@ -169,7 +169,7 @@ begin
 	);
 	
 	reg_value <= reg_value_io when (io_op_in or io_op_out) = '1' else reg_value_a;
-	reg_we <= reg_we_io when (io_op_in or io_op_out) = '1' else reg_we_a;
+	reg_we <= reg_we_io when (io_op_in) = '1' else reg_we_a;
 
 	register_file : entity work.reg_file port map (
 		clk			=> clk,

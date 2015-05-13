@@ -64,6 +64,7 @@ architecture Behavioral of decoder is
 
 begin
 	opCode		<= opCode_o;
+	opCode_o	<= instruction(17 downto 12);
 	opA			<= instruction(11 downto 8);
 	opB			<= instruction(7 downto 0);
 	jmp_addr	<= instruction(11 downto 0);
@@ -75,19 +76,15 @@ begin
 	io_kk_data <= instruction(11 downto 4);
 	io_kk_port <= instruction(3 downto 0);	
 
-	decompse : process (instruction, reset, zero, carry) 
-		variable opCode_v : unsigned(5 downto 0);
+	decompose : process (instruction, reset, zero, carry, opCode_o) 
 	begin
-		opCode_v	:= instruction(17 downto 12);
-		opCode_o	<= opCode_v;
-		
 		jump <= '0';
 		io_op_in <= '0';
 		io_op_out <= '0';
 		io_kk_en <= '0';
 		
 		if (reset = '0') then
-			case opCode_v is
+			case opCode_o is
 			when OP_JUMP_AAA => 
 				jump <= '1';
 			when OP_JUMP_Z_AAA | OP_JUMP_NZ_AAA =>
@@ -106,7 +103,7 @@ begin
 			end case;
 		end if;
 		
-	end process decompse;
+	end process decompose;
 
 	reg_proc : process (clk) begin
 		if (rising_edge(clk)) then

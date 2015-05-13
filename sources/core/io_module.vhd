@@ -66,7 +66,8 @@ begin
 	reg_value		<= in_port;
 	read_strobe		<= io_op_in and strobe_o and clk_cycle2;
 	write_strobe	<= io_op_out and strobe_o and clk_cycle2;
-	reg_we			<= '0';			-- FIXME!!
+	k_write_strobe	<= io_kk_en and strobe_o and clk_cycle2;
+	reg_we			<= io_op_in;			-- FIXME!!
 	
 	out_proc : process (reset, out_data, reg_reg0, reg_reg1) begin		
 		if (reset = '1') then
@@ -91,7 +92,7 @@ begin
 		if (rising_edge(clk)) then		
 			if (reset = '1') then
 				strobe_o <= '0';
-				clk_cycle2 <= '0';
+				clk_cycle2 <= '1';
 			else
 				if ((io_op_in or io_op_out) = '1') then
 					strobe_o <= '1';
