@@ -35,11 +35,12 @@ entity reg_file is
 	port (
 		clk			: in std_logic;
 		reset		: in std_logic;
-		instruction	: in unsigned (17 downto 0);		-- opCode (STORE, FETCH), opA (reg0), opB (7:4 -> reg1; 7:0 -> ss)
 		value		: in unsigned (7 downto 0);
 		write_en	: in std_logic;
 		reg0		: out unsigned (7 downto 0);
-		reg1		: out unsigned (7 downto 0)
+		reg1		: out unsigned (7 downto 0);
+		reg_address	: in unsigned (7 downto 0);
+		reg_select	: in std_logic
 	);
 end reg_file;
 
@@ -50,16 +51,8 @@ architecture Behavioral of reg_file is
 
 	type scratchpad_t is array(integer range <>) of unsigned(7 downto 0);
 	signal scratchpad		: scratchpad_t((scratch_pad_memory_size-1) downto 0); 
-	
-	signal opCode : unsigned (5 downto 0);
-	
-	signal reg_address : unsigned (7 downto 0);
-	signal reg_select : std_logic;				-- 0 = reg bank A, 1 = reg bank B
-begin
-	
-	opCode <= instruction(17 downto 12);
 
-	reg_address	<= instruction(11 downto 4);	-- 11 downto 8 opA, 7 downto 4 opB
+begin
 
 	write_p : process (clk) begin
 		if rising_edge(clk) then
@@ -84,17 +77,5 @@ begin
 		end if;
 	end process read_p;
 
-	reg_sel : process(clk) begin
-		if rising_edge(clk) then
-			if (reset = '1') then
-				reg_select <= '0';
-			else
-				if (opCode = OP_REGBANK_A) then
-					reg_select <= instruction(0);
-				end if;
-			end if;
-		end if;
-	end process reg_sel;
-	
 end Behavioral;
 

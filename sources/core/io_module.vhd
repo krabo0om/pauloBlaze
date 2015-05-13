@@ -39,7 +39,13 @@ entity io_module is
 		reg_we			: out std_logic;
 		reg_reg0		: in  unsigned (7 downto 0);
 		reg_reg1		: in  unsigned (7 downto 0);
-		instruction		: in  unsigned (17 downto 0);
+		out_data		: in  unsigned (7 downto 0);
+		io_op_in		: in  std_logic;
+		io_op_out		: in  std_logic;
+		io_op_out_pp	: in  std_logic;
+		io_kk_en		: in  std_logic;
+		io_kk_port		: in  unsigned (3 downto 0);
+		io_kk_data		: in  unsigned (7 downto 0);
 		-- actual i/o module ports
 		in_port			: in  unsigned (7 downto 0);
 		port_id			: out unsigned (7 downto 0);
@@ -52,30 +58,28 @@ end io_module;
 
 architecture Behavioral of io_module is
 	
-	signal in_out : std_logic;	-- 0 = in, 1 = out
 	signal strobe_o : std_logic;
 	signal clk_cycle2 : std_logic;
 
 begin
 	
-	in_out			<= instruction(17);
 	reg_value		<= in_port;
-	read_strobe		<= (not in_out) and strobe_o and clk_cycle2;
-	write_strobe	<= in_out and strobe_o and clk_cycle2;
+	read_strobe		<= io_op_in and strobe_o and clk_cycle2;
+	write_strobe	<= io_op_out and strobe_o and clk_cycle2;
 	reg_we			<= '0';			-- FIXME!!
 	
-	out_proc : process (reset, instruction, reg_reg0, reg_reg1) begin		
+	out_proc : process (reset, out_data, reg_reg0, reg_reg1) begin		
 		if (reset = '1') then
 			port_id <= (others => '0');
 			out_port <= (others => '0');
 		else
-			if (instruction(17 downto 12) = OP_OUTPUTK_KK_P) then
-				port_id <= x"0" & instruction(3 downto 0);
-				out_port <= instruction (11 downto 4);
+			if (io_kk_en = '1') then
+				port_id <= x"0" & io_kk_port;
+				out_port <= io_kk_data;
 			else
 				out_port <= reg_reg0;
-				if (instruction(12) = '1') then			-- intermediate value pp
-					port_id <= instruction(7 downto 0);
+				if (io_op_out_pp = '1') then			-- intermediate value pp
+					port_id <= out_data;
 				else
 					port_id <= reg_reg1;
 				end if;
@@ -89,13 +93,11 @@ begin
 				strobe_o <= '0';
 				clk_cycle2 <= '0';
 			else
-				case instruction(17 downto 12) is
-					when OP_INPUT_SX_SY | OP_INPUT_SX_PP | OP_OUTPUT_SX_SY 
-							| OP_OUTPUT_SX_PP | OP_OUTPUTK_KK_P =>
-						strobe_o <= '1';
-					when others =>
-						strobe_o <= '0';
-				end case;
+				if ((io_op_in or io_op_out) = '1') then
+					strobe_o <= '1';
+				else
+					strobe_o <= '0';
+				end if;
 				clk_cycle2 <= not clk_cycle2;
 			end if;
 		end if;

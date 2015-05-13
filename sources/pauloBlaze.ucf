@@ -1,4 +1,4 @@
 
 NET "clk" TNM_NET = "p_clk";
-TIMESPEC "TS_ts_p_clk" = PERIOD "p_clk" 10 ns HIGH 50%;
+TIMESPEC "TS_p_clk" = PERIOD "p_clk" 5 ns HIGH 50%;
 					

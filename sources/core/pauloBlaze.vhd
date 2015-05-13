@@ -68,12 +68,9 @@ architecture Behavioral of pauloBlaze is
 	signal opcode			: unsigned(5 downto 0);
 	signal opA				: unsigned(3 downto 0);
 	signal opB				: unsigned(7 downto 0);
-	signal data_io_port2reg	: unsigned(7 downto 0);
 	-- signals alu out
 	signal carry			: STD_LOGIC;
 	signal zero				: STD_LOGIC;
-	signal data_io_reg2port	: unsigned(7 downto 0);
-	signal data_io_addr		: unsigned(7 downto 0);
 
 	-- signals pc in
 	signal jump			: STD_LOGIC;
@@ -81,12 +78,19 @@ architecture Behavioral of pauloBlaze is
 
 	signal debug_alu	: debug_signals;
 	
+	-- signals decoder
+	signal io_op_in		: std_logic;
+	signal io_op_out	: std_logic;	
+	signal io_op_out_pp	: std_logic;	
+	signal io_kk_en		: std_logic;
+	signal io_kk_port	: unsigned (3 downto 0);
+	signal io_kk_data	: unsigned (7 downto 0);
+	
 	-- general register file signals
 	signal reg_select	: std_logic;
 	signal reg_reg0		: unsigned (7 downto 0);
 	signal reg_reg1		: unsigned (7 downto 0);
 	signal reg_address	: unsigned (7 downto 0);	
-	signal reg_mux		: std_logic;
 	signal reg_value	: unsigned (7 downto 0);
 	signal reg_we		: std_logic;
 	-- signals register file from alu
@@ -154,16 +158,24 @@ begin
 		zero			=> zero,
 		jmp_addr		=> jmp_addr,
 		jump			=> jump,
-		reg_mux			=> reg_mux
+		io_op_in		=> io_op_in,
+		io_op_out		=> io_op_out,
+		io_op_out_pp	=> io_op_out_pp,
+		io_kk_en		=> io_kk_en,
+		io_kk_port		=> io_kk_port,
+		io_kk_data		=> io_kk_data,
+		reg_address		=> reg_address,
+		reg_select		=> reg_select
 	);
 	
-	reg_value <= reg_value_a when reg_mux = '0' else reg_value_io;
-	reg_we <= reg_we_a when reg_mux = '0' else reg_we_io;
+	reg_value <= reg_value_io when (io_op_in or io_op_out) = '1' else reg_value_a;
+	reg_we <= reg_we_io when (io_op_in or io_op_out) = '1' else reg_we_a;
 
 	register_file : entity work.reg_file port map (
 		clk			=> clk,
 		reset		=> reset,
-		instruction	=> instruction,
+		reg_address	=> reg_address,
+		reg_select	=> reg_select,
 		value		=> reg_value,
 		write_en	=> reg_we,
 		reg0		=> reg_reg0,
@@ -177,7 +189,13 @@ begin
 		reg_we			=> reg_we_io,
 		reg_reg0		=> reg_reg0,
 		reg_reg1		=> reg_reg1,
-		instruction		=> instruction,
+		out_data		=> opB,
+		io_op_in		=> io_op_in,
+		io_op_out		=> io_op_out,
+		io_op_out_pp	=> io_op_out_pp,
+		io_kk_en		=> io_kk_en,
+		io_kk_port		=> io_kk_port,
+		io_kk_data		=> io_kk_data,
 		-- actual i/o module ports
 		in_port			=> in_port,
 		port_id			=> port_id,

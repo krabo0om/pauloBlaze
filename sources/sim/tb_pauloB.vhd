@@ -89,8 +89,8 @@ BEGIN
 		k_write_strobe => k_write_strobe,
 		read_strobe => read_strobe,
 		interrupt => interrupt,
-		interrupt_ack => interrupt_ack,
-		debugS => debugS
+		interrupt_ack => interrupt_ack
+--		debugS => debugS
 	);
 	
 	instruction <= unsigned(instruction_slv); 
