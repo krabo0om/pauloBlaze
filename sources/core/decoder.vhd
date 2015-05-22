@@ -191,8 +191,14 @@ begin
 			if (reset = '1') then 
 				if (sleep = '1') then
 					sleep_state <= sleeping;
+					bram_pause <= '1';
+					sleep_int_o <= '1';
+					clk2_reset <= '0';
 				else 
 					sleep_state <= awake;
+					bram_pause <= '0';
+					sleep_int_o <= '0';
+					clk2_reset <= '0';
 				end if;
 			else
 				bram_pause <= '0';

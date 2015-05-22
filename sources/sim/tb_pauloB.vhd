@@ -72,6 +72,7 @@ ARCHITECTURE behavior OF tb_pauloB IS
    signal prog_mem_en : std_logic;
    signal done : std_logic;
    signal sleep_en : std_logic := '0';
+   signal inter_en : std_logic := '1';
    
    constant real_prog : boolean := true;
  
@@ -127,22 +128,14 @@ BEGIN
 		end process sleeping;
 		
 		inter_static : process 
-			variable cnt : integer := 0;
-			variable done : boolean := false;
 		begin
-			cnt := cnt +1 ;
-			if (cnt >= 777 and not done) then
+			if (inter_en = '1') then
+				wait for 777 ns;
 				interrupt <= '1';
-			end if;
-			if (interrupt_ack = '1') then
+				wait until interrupt_ack = '1';
 				interrupt <= '0';
-				done := true;
 			end if;
-			if (not done) then
-				wait for 1 ns;
-			else 
-				wait;
-			end if;
+			wait;
 		end process inter_static;
 		
 --		inter_gen : process
@@ -179,6 +172,7 @@ BEGIN
 			reset <= '1';
 			wait for clk_period*10;
 			wait until done = '1';
+			wait until clk = '1';
 			reset <= '0';
 			wait;
 		end process;
