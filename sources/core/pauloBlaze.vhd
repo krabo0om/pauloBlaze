@@ -64,6 +64,8 @@ end pauloBlaze;
 
 architecture Behavioral of pauloBlaze is
 
+	signal clk2				: std_logic;		-- high during 2nd clk cycle 
+
 	-- signals alu in
 	signal opcode			: unsigned(5 downto 0);
 	signal opA				: unsigned(3 downto 0);
@@ -73,6 +75,8 @@ architecture Behavioral of pauloBlaze is
 	signal zero				: STD_LOGIC;
 
 	-- signals pc in
+	signal ret			: STD_LOGIC;
+	signal call			: STD_LOGIC;
 	signal jump			: STD_LOGIC;
 	signal jmp_addr		: unsigned (11 downto 0);
 
@@ -85,6 +89,14 @@ architecture Behavioral of pauloBlaze is
 	signal io_kk_en		: std_logic;
 	signal io_kk_port	: unsigned (3 downto 0);
 	signal io_kk_data	: unsigned (7 downto 0);
+	signal spm_addr_ss	: unsigned (7 downto 0);
+	signal spm_ss		: std_logic;
+	signal spm_we		: std_logic;
+	signal spm_rd		: std_logic;
+	signal inter_j		: std_logic;
+	signal sleep_int	: std_logic;
+	signal bram_pause	: std_logic;
+	signal clk2_reset	: std_logic;
 	
 	-- general register file signals
 	signal reg_select	: std_logic;
@@ -102,52 +114,65 @@ architecture Behavioral of pauloBlaze is
 
 	
 begin
-	
---	debug_assignments : if (debug = true) generate begin
---		assert false report "du bist doof" severity note;
-----		debugS.regFile			<= debug_alu.regFile;
-----		debugS.scratchpad		<= debug_alu.scratchpad;
-----		debugS.scratch_valid	<= debug_alu.scratch_valid;
-----		debugS.scratchAddr		<= debug_alu.scratchAddr;
-----		debugS.carry			<= debug_alu.carry;
-----		debugS.zero				<= debug_alu.zero;
-----		debugS.regSelect		<= debug_alu.regSelect;
-----		debugS.opA_value		<= debug_alu.opA_value;
-----		debugS.opB_value		<= debug_alu.opB_value;
-----		debugS.result_v			<= debug_alu.result_v;
---	debugS <= debug_alu;
---	end generate debug_assignments;
 
-	pc : entity work.program_counter port map (
-		clk		=> clk,
-		reset	=> reset,
-		jump	=> jump,
-		jmp_addr=> jmp_addr,
-		address	=> address
+	bram_enable <= clk2 and not bram_pause when reset = '0' else '0';
+	
+	clk2_gen : process (clk) begin
+		if (rising_edge(clk)) then
+			if (reset = '1' or clk2_reset = '1') then
+				clk2 <= '1';
+			else 
+				clk2 <= not clk2;
+			end if;
+		end if;	
+	end process clk2_gen;
+	
+	pc : entity work.program_counter  
+	generic map (
+		interrupt_vector => interrupt_vector )
+	port map (
+		clk			=> clk,
+		reset		=> reset,
+		sleep_int	=> sleep_int,
+		bram_pause	=> bram_pause,
+		call		=> call,
+		ret			=> ret,
+		inter_j		=> inter_j,
+		jump		=> jump,
+		jmp_addr	=> jmp_addr,
+		address		=> address 	);
+	
+	-- alu
+	alu_inst : entity work.ALU 
+	generic map (
+		debug	=> debug ) 
+	PORT MAP (
+		clk			=> clk,
+		clk2		=> clk2,
+		reset		=> reset,
+		sleep_int	=> sleep_int,
+		opcode		=> opcode,
+--		opA			=> opA,
+		opB			=> opB,
+		inter_j		=> inter_j,
+		carry		=> carry,
+		zero		=> zero,
+		reg_value	=> reg_value_a,
+		reg_we		=> reg_we_a,
+		reg_reg0	=> reg_reg0,
+		reg_reg1	=> reg_reg1
 	);
 	
-	alu_inst : entity work.ALU generic map (
-		debug	=> debug
---		scratch_pad_memory_size => scratch_pad_memory_size
+	decoder_inst : entity work.decoder generic map (
+		interrupt_vector => interrupt_vector
 	) PORT MAP (
-		clk					=> clk,
-		reset				=> reset,
-		opcode				=> opcode,
---		opA					=> opA,
-		opB					=> opB,
-		carry				=> carry,
-		zero				=> zero,
-		reg_value			=> reg_value_a,
-		reg_we				=> reg_we_a,
-		reg_reg0	 		=> reg_reg0,
-		reg_reg1	 		=> reg_reg1
---		debugS_alu			=> debugS
-	);
-	
-	decoder_inst : entity work.decoder PORT MAP (
 		clk				=> clk,
+		clk2			=> clk2,
 		reset			=> reset,
 		sleep			=> sleep,
+		sleep_int		=> sleep_int,
+		bram_pause		=> bram_pause,
+		clk2_reset		=> clk2_reset,
 		interrupt		=> interrupt,
 		interrupt_ack	=> interrupt_ack,
 		instruction		=> instruction,
@@ -156,6 +181,9 @@ begin
 		opB				=> opB,
 		carry			=> carry,
 		zero			=> zero,
+		call			=> call,
+		ret				=> ret,
+		inter_j			=> inter_j,
 		jmp_addr		=> jmp_addr,
 		jump			=> jump,
 		io_op_in		=> io_op_in,
@@ -165,21 +193,31 @@ begin
 		io_kk_port		=> io_kk_port,
 		io_kk_data		=> io_kk_data,
 		reg_address		=> reg_address,
-		reg_select		=> reg_select
+		reg_select		=> reg_select,
+		spm_addr_ss		=> spm_addr_ss,
+		spm_ss			=> spm_ss,
+		spm_we			=> spm_we,
+		spm_rd			=> spm_rd
 	);
 	
 	reg_value <= reg_value_io when (io_op_in or io_op_out) = '1' else reg_value_a;
 	reg_we <= reg_we_io when (io_op_in) = '1' else reg_we_a;
 
-	register_file : entity work.reg_file port map (
-		clk			=> clk,
-		reset		=> reset,
-		reg_address	=> reg_address,
-		reg_select	=> reg_select,
-		value		=> reg_value,
-		write_en	=> reg_we,
-		reg0		=> reg_reg0,
-		reg1		=> reg_reg1
+	register_file : entity work.reg_file generic map (
+		scratch_pad_memory_size => scratch_pad_memory_size
+	) port map (
+		clk				=> clk,
+		reset			=> reset,
+		reg_address		=> reg_address,
+		reg_select		=> reg_select,
+		value			=> reg_value,
+		write_en		=> reg_we,
+		reg0			=> reg_reg0,
+		reg1			=> reg_reg1,
+		spm_addr_ss		=> spm_addr_ss,
+		spm_ss			=> spm_ss,
+		spm_we			=> spm_we,
+		spm_rd			=> spm_rd
 	);
 
 	io_inst	: entity work.io_module PORT MAP (

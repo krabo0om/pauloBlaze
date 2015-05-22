@@ -67,9 +67,9 @@ begin
 	read_strobe		<= io_op_in and strobe_o and clk_cycle2;
 	write_strobe	<= io_op_out and strobe_o and clk_cycle2;
 	k_write_strobe	<= io_kk_en and strobe_o and clk_cycle2;
-	reg_we			<= io_op_in;			-- FIXME!!
+	reg_we			<= io_op_in;			-- FIXME!! ???
 	
-	out_proc : process (reset, out_data, reg_reg0, reg_reg1) begin		
+	out_proc : process (reset, out_data, reg_reg0, reg_reg1, io_kk_en, io_kk_port, io_kk_data, io_op_out_pp) begin		
 		if (reset = '1') then
 			port_id <= (others => '0');
 			out_port <= (others => '0');

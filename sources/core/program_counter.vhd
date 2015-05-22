@@ -31,36 +31,83 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity program_counter is
+	generic (
+		interrupt_vector : unsigned(11 downto 0) := X"3FF"
+	);
 	Port (
-		clk		: in  STD_LOGIC;
-		reset	: in  STD_LOGIC;
-		jump	: in  STD_LOGIC;
-		jmp_addr: in  unsigned (11 downto 0);
-		address	: out  unsigned (11 downto 0));
+		clk			: in  STD_LOGIC;
+		reset		: in  STD_LOGIC;
+		sleep_int	: in  STD_LOGIC;
+		bram_pause	: in  STD_LOGIC;
+		call		: in  STD_LOGIC;
+		ret			: in  std_logic;
+		inter_j		: in  std_logic;
+		jump		: in  STD_LOGIC;
+		jmp_addr	: in  unsigned (11 downto 0);
+		address		: out unsigned (11 downto 0));
 end program_counter;
 
 architecture Behavioral of program_counter is
 
-	signal counter : unsigned (12 downto 0);
-	signal jmp_done : std_logic;
+	type stack_t is array (29 downto 0) of unsigned(11 downto 0);
+	signal stack	: stack_t;
+	signal pointer	: integer range 0 to 29;
+	signal counter	: unsigned (12 downto 0);
+	signal jmp_int	: std_logic;
+	signal jmp_done	: std_logic;
+	signal addr_o	: unsigned (11 downto 0);
 
 begin
 
-	clken : process (clk) begin
+	jmp_int <= jump or call or inter_j;
+	address	<= interrupt_vector when inter_j = '1' else addr_o ;
+
+	clken : process (clk) 
+		variable p : integer;
+		variable addr_next : unsigned (11 downto 0);
+	begin
 		if (rising_edge(clk)) then
 			if (reset = '1') then
-				counter <= (others => '0');
-				address <= (others => '0');
+				counter <= x"000" & '1';
+				addr_o <= (others => '0');
 				jmp_done <= '0';
+				stack <= (others => (others => '0'));
+				pointer <= 0;
 			else
-				if (jump = '1' and jmp_done <= '0') then
-					counter <= (jmp_addr & '1');
-					address <= jmp_addr;
+				if (bram_pause = '1') then
+					counter <= addr_o & '1';
+					jmp_done <= jmp_done;
+					addr_o <= counter(12 downto 1);
+				elsif (ret = '1' and jmp_done <= '0') then
+					p := pointer - 1;
+					pointer <= p;
+					addr_next := stack(p);
+					if (inter_j = '0') then
+						addr_next := addr_next + 1;
+					end if;
+					counter <= addr_next & '1';
+					addr_o <= addr_next;
 					jmp_done <= '1';
+				elsif (jmp_int = '1' and jmp_done <= '0') then
+					if (inter_j = '1') then
+						stack(pointer) <= addr_o;
+						pointer <= pointer + 1;
+						counter <= interrupt_vector & '1';
+						addr_o <= interrupt_vector;
+						jmp_done <= '1';
+					else
+						if (call = '1') then
+							stack(pointer) <= addr_o;
+							pointer <= pointer + 1;
+						end if;
+						counter <= jmp_addr & '1';
+						addr_o <= jmp_addr;
+						jmp_done <= '1';			
+					end if;
 				else
 					jmp_done <= '0';
 					counter <= counter + 1;
-					address <= counter(12 downto 1);
+					addr_o <= counter(12 downto 1);
 				end if;
 			end if;
 		end if;	

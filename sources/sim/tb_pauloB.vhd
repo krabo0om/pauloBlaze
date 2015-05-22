@@ -28,11 +28,13 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+use ieee.math_real.all;
 use work.debugSignals.all; 
 use work.op_codes.all;
 
  
 ENTITY tb_pauloB IS
+	generic(seed_time : integer := 1);
 END tb_pauloB;
  
 ARCHITECTURE behavior OF tb_pauloB IS 
@@ -68,14 +70,17 @@ ARCHITECTURE behavior OF tb_pauloB IS
    signal pre_s : debug_signals;
    signal post_s : debug_signals;
    signal prog_mem_en : std_logic;
-      
+   
    constant real_prog : boolean := true;
  
 BEGIN 
 	-- Instantiate the Unit Under Test (UUT)
-	uut: entity work.pauloBlaze generic map (
-		debug => true
-	) PORT MAP (
+	uut: entity work.pauloBlaze 
+	generic map (
+		debug => true,
+		interrupt_vector => x"300", 
+		scratch_pad_memory_size => 64 )
+	PORT MAP (
 --		clk => clk_5ns_delayed,
 		clk => clk,
 		reset => reset,
@@ -90,10 +95,8 @@ BEGIN
 		k_write_strobe => k_write_strobe,
 		read_strobe => read_strobe,
 		interrupt => interrupt,
-		interrupt_ack => interrupt_ack
---		debugS => debugS
-	);
-	
+		interrupt_ack => interrupt_ack );
+	-- end port map
 	instruction <= unsigned(instruction_slv); 
 
 	-- Clock process definitions
@@ -108,7 +111,7 @@ BEGIN
 	clk5ns_process :process
 	begin
 		if (clk_5ns_enable = '0') then
-			wait for 5 ns;
+			wait for 100 ps;
 			clk_5ns_enable <= '1';
 		end if;
 		clk_5ns_delayed <= '0';
@@ -117,9 +120,50 @@ BEGIN
 		wait for clk_period/2;
 	end process;
  
+	assert FALSE report "SEED = " & integer'image(seed_time) severity NOTE;
+	
+	sleeping : process begin
+		wait for 475 ns;
+		sleep <= '1';
+		wait for 137 ns;
+		sleep <= '0';
+		wait;
+	end process sleeping;
+	
+	inter_static : process 
+		variable cnt : integer := 0;
+		variable done : boolean := false;
+	begin
+		cnt := cnt +1 ;
+		if (cnt >= 777 and not done) then
+			interrupt <= '1';
+		end if;
+		if (interrupt_ack = '1') then
+			interrupt <= '0';
+			done := true;
+		end if;
+		if (not done) then
+			wait for 1 ns;
+		else 
+			wait;
+		end if;
+	end process inter_static;
+--	inter_gen : process
+--	  VARIABLE seed : integer := 1312312;
+--	  VARIABLE seed2 : integer := 324412;
+--	  VARIABLE rand: real;
+--	begin
+--		UNIFORM(seed, seed2, rand);                                   -- generate random number
+--		if (rand > 0.99) then
+--			interrupt <= '1';
+--		end if;
+--		if (interrupt_ack = '1') then
+--			interrupt <= '0';
+--		end if;
+--		wait for clk_period/2;
+--	end process inter_gen;
+ 
 	real_program : if real_prog generate
-
-		prog_mem_en <= not reset;
 
 		prog_mem : entity work.my1stP6 generic map (
 			C_FAMILY => "V6",
@@ -128,7 +172,7 @@ BEGIN
 		Port map (
 			address => std_logic_vector(address),
 			instruction => instruction_slv,
-			enable => prog_mem_en,
+			enable => bram_enable,
 			rdl => open,
 			clk => clk);
 	
@@ -152,7 +196,7 @@ BEGIN
 		end process;
 	
 		process begin
-			wait for 10 ns;
+			wait for 20 ns;
 			in_port <= in_port_del;
 		end process;
 		
