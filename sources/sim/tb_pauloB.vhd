@@ -70,6 +70,8 @@ ARCHITECTURE behavior OF tb_pauloB IS
    signal pre_s : debug_signals;
    signal post_s : debug_signals;
    signal prog_mem_en : std_logic;
+   signal done : std_logic;
+   signal sleep_en : std_logic := '0';
    
    constant real_prog : boolean := true;
  
@@ -97,7 +99,7 @@ BEGIN
 		interrupt => interrupt,
 		interrupt_ack => interrupt_ack );
 	-- end port map
-	instruction <= unsigned(instruction_slv); 
+	
 
 	-- Clock process definitions
 	clk_process :process
@@ -108,71 +110,62 @@ BEGIN
 		wait for clk_period/2;
 	end process;
  
-	clk5ns_process :process
-	begin
-		if (clk_5ns_enable = '0') then
-			wait for 100 ps;
-			clk_5ns_enable <= '1';
-		end if;
-		clk_5ns_delayed <= '0';
-		wait for clk_period/2;
-		clk_5ns_delayed <= '1';
-		wait for clk_period/2;
-	end process;
- 
-	assert FALSE report "SEED = " & integer'image(seed_time) severity NOTE;
-	
-	sleeping : process begin
-		wait for 475 ns;
-		sleep <= '1';
-		wait for 137 ns;
-		sleep <= '0';
-		wait;
-	end process sleeping;
-	
-	inter_static : process 
-		variable cnt : integer := 0;
-		variable done : boolean := false;
-	begin
-		cnt := cnt +1 ;
-		if (cnt >= 777 and not done) then
-			interrupt <= '1';
-		end if;
-		if (interrupt_ack = '1') then
-			interrupt <= '0';
-			done := true;
-		end if;
-		if (not done) then
-			wait for 1 ns;
-		else 
-			wait;
-		end if;
-	end process inter_static;
---	inter_gen : process
---	  VARIABLE seed : integer := 1312312;
---	  VARIABLE seed2 : integer := 324412;
---	  VARIABLE rand: real;
---	begin
---		UNIFORM(seed, seed2, rand);                                   -- generate random number
---		if (rand > 0.99) then
---			interrupt <= '1';
---		end if;
---		if (interrupt_ack = '1') then
---			interrupt <= '0';
---		end if;
---		wait for clk_period/2;
---	end process inter_gen;
- 
 	real_program : if real_prog generate
+	
+		instruction <= unsigned(instruction_slv); 
 
-		prog_mem : entity work.my1stP6 generic map (
-			C_FAMILY => "V6",
-			C_RAM_SIZE_KWORDS => 1,
-			C_JTAG_LOADER_ENABLE => 0)
+		assert FALSE report "SEED = " & integer'image(seed_time) severity NOTE;
+		
+		sleeping : process begin
+			if (sleep_en = '1') then
+				wait for 475 ns;
+				sleep <= '1';
+				wait for 137 ns;
+				sleep <= '0';
+			end if;
+			wait;
+		end process sleeping;
+		
+		inter_static : process 
+			variable cnt : integer := 0;
+			variable done : boolean := false;
+		begin
+			cnt := cnt +1 ;
+			if (cnt >= 777 and not done) then
+				interrupt <= '1';
+			end if;
+			if (interrupt_ack = '1') then
+				interrupt <= '0';
+				done := true;
+			end if;
+			if (not done) then
+				wait for 1 ns;
+			else 
+				wait;
+			end if;
+		end process inter_static;
+		
+--		inter_gen : process
+--		  VARIABLE seed : integer := 1312312;
+--		  VARIABLE seed2 : integer := 324412;
+--		  VARIABLE rand: real;
+--		begin
+--			UNIFORM(seed, seed2, rand);                                   -- generate random number
+--			if (rand > 0.99) then
+--				interrupt <= '1';
+--			end if;
+--			if (interrupt_ack = '1') then
+--				interrupt <= '0';
+--			end if;
+--			wait for clk_period/2;
+--		end process inter_gen;
+
+		prog_mem : entity work.code_loader
 		Port map (
 			address => std_logic_vector(address),
 			instruction => instruction_slv,
 			enable => bram_enable,
+			done => done,
 			rdl => open,
 			clk => clk);
 	
@@ -181,17 +174,12 @@ BEGIN
 --			in_port <= data(to_integer(unsigned(port_id)));
 --		end process input_delay;
 	
-	   -- Stimulus process
-	   stim_proc: process
+	   reset_proc: process
 	   begin		
 			reset <= '1';
 			wait for clk_period*10;
+			wait until done = '1';
 			reset <= '0';
-			
-			wait for clk_period*10;
-	
-			-- insert stimulus here
-			
 			wait;
 		end process;
 	
