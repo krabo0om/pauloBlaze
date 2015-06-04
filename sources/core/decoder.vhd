@@ -54,6 +54,7 @@ entity decoder is
 		call			: out	STD_LOGIC;
 		ret				: out	std_logic;
 		inter_j			: out	std_logic;
+		inter_active	: out	std_logic;
 		jump			: out	STD_LOGIC;
 		jmp_addr		: out	unsigned (11 downto 0);
 		io_op_in		: out	std_logic;
@@ -176,7 +177,7 @@ begin
 				inter_en <= '0';
 				inter_j_o <= '0';
 			else
-				inter_j_o <= inter_en and interrupt and clk2;
+				inter_j_o <= inter_en and interrupt and not clk2;
 				if (opCode_o = OP_ENABLE_INTERRUPT or opCode_o = OP_RETURNI_ENABLE or inter_j_o = '1') then
 					inter_en <= instruction(0) or inter_j_o;
 				else

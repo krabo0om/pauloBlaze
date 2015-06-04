@@ -82,28 +82,31 @@ begin
 					p := pointer - 1;
 					pointer <= p;
 					addr_next := stack(p);
-					if (inter_j = '0') then
-						addr_next := addr_next + 1;
-					end if;
+--					if (inter_j = '0') then
+--						addr_next := addr_next + 1;
+--					end if;
 					counter <= addr_next & '1';
 					addr_o <= addr_next;
 					jmp_done <= '1';
-				elsif (jmp_int = '1' and jmp_done <= '0') then
-					if (inter_j = '1') then
-						stack(pointer) <= addr_o;
-						pointer <= pointer + 1;
-						counter <= interrupt_vector & '1';
-						addr_o <= interrupt_vector;
-						jmp_done <= '1';
+				elsif (inter_j = '1') then
+					if (call = '1' or jump = '1') then
+						-- use target address in case of interrupted jump or call
+						stack(pointer) <= jmp_addr;
 					else
-						if (call = '1') then
-							stack(pointer) <= addr_o;
-							pointer <= pointer + 1;
-						end if;
-						counter <= jmp_addr & '1';
-						addr_o <= jmp_addr;
-						jmp_done <= '1';			
+						stack(pointer) <= addr_o-1;
 					end if;
+					pointer <= pointer + 1;
+					counter <= (interrupt_vector & '1') + ("" & '1');
+					addr_o <= interrupt_vector;
+					jmp_done <= '1';
+				elsif (jmp_int = '1' and jmp_done <= '0') then
+					if (call = '1') then
+						stack(pointer) <= addr_o+1;
+						pointer <= pointer + 1;
+					end if;
+					counter <= jmp_addr & '1';
+					addr_o <= jmp_addr;
+					jmp_done <= '1';			
 				else
 					jmp_done <= '0';
 					counter <= counter + 1;

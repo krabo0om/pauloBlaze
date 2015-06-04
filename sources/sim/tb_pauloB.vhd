@@ -130,7 +130,7 @@ BEGIN
 		inter_static : process 
 		begin
 			if (inter_en = '1') then
-				wait for 777 ns;
+				wait for 1172 ns;
 				interrupt <= '1';
 				wait until interrupt_ack = '1';
 				interrupt <= '0';

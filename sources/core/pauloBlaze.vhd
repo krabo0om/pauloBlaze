@@ -94,9 +94,12 @@ architecture Behavioral of pauloBlaze is
 	signal spm_we		: std_logic;
 	signal spm_rd		: std_logic;
 	signal inter_j		: std_logic;
+	signal inter_active	: std_logic;
 	signal sleep_int	: std_logic;
 	signal bram_pause	: std_logic;
 	signal clk2_reset	: std_logic;
+	
+	
 	
 	-- general register file signals
 	signal reg_select	: std_logic;
@@ -147,20 +150,20 @@ begin
 	generic map (
 		debug	=> debug ) 
 	PORT MAP (
-		clk			=> clk,
-		clk2		=> clk2,
-		reset		=> reset,
-		sleep_int	=> sleep_int,
-		opcode		=> opcode,
---		opA			=> opA,
-		opB			=> opB,
-		inter_j		=> inter_j,
-		carry		=> carry,
-		zero		=> zero,
-		reg_value	=> reg_value_a,
-		reg_we		=> reg_we_a,
-		reg_reg0	=> reg_reg0,
-		reg_reg1	=> reg_reg1
+		clk				=> clk,
+		clk2			=> clk2,
+		reset			=> reset,
+		sleep_int		=> sleep_int,
+		opcode			=> opcode,
+--		opA				=> opA,
+		opB				=> opB,
+		inter_active	=> inter_active,
+		carry			=> carry,
+		zero			=> zero,
+		reg_value		=> reg_value_a,
+		reg_we			=> reg_we_a,
+		reg_reg0		=> reg_reg0,
+		reg_reg1		=> reg_reg1
 	);
 	
 	decoder_inst : entity work.decoder generic map (
@@ -184,6 +187,7 @@ begin
 		call			=> call,
 		ret				=> ret,
 		inter_j			=> inter_j,
+		inter_active	=> inter_active,
 		jmp_addr		=> jmp_addr,
 		jump			=> jump,
 		io_op_in		=> io_op_in,

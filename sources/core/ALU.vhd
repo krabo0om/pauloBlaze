@@ -43,7 +43,7 @@ entity ALU is
 		opcode		: in	unsigned (5 downto 0);
 --		opA			: in	unsigned (3 downto 0);
 		opB			: in	unsigned (7 downto 0);
-		inter_j		: in	std_logic;
+		inter_active: in	std_logic;
 		carry		: out	STD_LOGIC;
 		zero		: out	STD_LOGIC;
 		reg_value	: out	unsigned (7 downto 0);
@@ -63,6 +63,8 @@ architecture Behavioral of ALU is
 	
 	signal carry_c	: std_logic;
 	signal carry_o	: std_logic;
+	signal carry_i	: std_logic;	-- saved during interrupt
+	signal zero_i	: std_logic;	-- same
 	signal zero_c	: std_logic;	
 	signal zero_o	: std_logic;
 	
@@ -83,6 +85,7 @@ begin
 		variable result_v	: unsigned(8 downto 0);
 		variable partiy_v	: std_logic;
 		variable padding	: std_logic;
+		variable tmp		: std_logic;
 	begin
 		if (debug) then
 			padding := '0';			--looks better during simulation
@@ -179,11 +182,8 @@ begin
 				when OP_COMPARE_SX_SY | OP_COMPARE_SX_KK | OP_COMPARECY_SX_SY | OP_COMPARECY_SX_KK =>
 					-- opCode(1) == 0 : COMAPRE
 					-- opCode(1) == 1 : COMAPRECY
-					if (opCode(1) = '0') then
-						result_v := ('0' & opA_value) - ("" & opB_value);
-					else 
-						result_v := ('0' & opA_value) - ('0' & opB_value) - ("" & carry_o);
-					end if;
+					-- mask carry with it
+					result_v := ('0' & opA_value) - ('0' & opB_value) - ("" & (opCode(1) and carry_o));
 					
 					if (result_v(7 downto 0) = "00000000") then 
 						if (opCode(1) = '0') then
@@ -198,17 +198,24 @@ begin
 					carry_c <= result_v(8);
 				--Shift and Rotate
 				when OP_SL0_SX =>
-					
 					case opB(2 downto 0) is
 						when "110" | "111" =>
-							result_v(0) := opB(0);
-						when "100" | "010" =>	-- rotate and 
-							result_v(0) := opA_value(0);
+							tmp := opB(0);
+						when "010" =>	-- RL 
+							tmp := opA_value(7);
+						when "100" =>	-- RR
+							tmp := opA_value(0);
 						when "000" => 
-							result_v(0) := carry_o;
+							tmp := carry_o;
 						when others =>
-							result_v(0) := '0';
+							tmp := '0';
 					end case;
+					
+					if (opB(3) = '1') then
+						result_v := opA_value(0) & tmp & opA_value(7 downto 1);
+					else	-- concat the carry value into the result and shift
+						result_v := opA_value(7) & opA_value(6 downto 0) & tmp;
+					end if;
 					
 					carry_c <= result_v(8);
 					if (result_v(7 downto 0) = "00000000") then 
@@ -216,15 +223,7 @@ begin
 					else
 						zero_c <= '0';
 					end if;
-		--		when OP_SL1_SX =>
-		--		when OP_SLX_SX =>
-		--		when OP_SLA_SX =>
-		--		when OP_RL_SX =>
-		--		when OP_SR0_SX =>
-		--		when OP_SR1_SX =>
-		--		when OP_SRX_SX =>
-		--		when OP_SRA_SX =>
-		--		when OP_RR_SX =>
+					res_valid <= '1';
 				when others =>
 					result_v := (others => padding);
 			end case;
@@ -237,7 +236,11 @@ begin
 			if (reset = '1') then
 				carry_o <= '0';
 				zero_o <= '0';
-			else 
+			else
+				if (inter_active = '1') then
+					-- preserve flags
+					-- -> decoder: preserve reg select
+				end if;
 				if (clk2 = '1') then
 					carry_o <= carry_c;
 					zero_o <= zero_c;
