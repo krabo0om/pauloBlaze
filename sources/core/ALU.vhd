@@ -36,20 +36,22 @@ entity ALU is
 --		scratch_pad_memory_size	: integer := 64
 		);
 	Port (
-		clk			: in	STD_LOGIC;
-		clk2		: in	STD_LOGIC;
-		reset		: in	STD_LOGIC;
-		sleep_int	: in	STD_LOGIC;
-		opcode		: in	unsigned (5 downto 0);
---		opA			: in	unsigned (3 downto 0);
-		opB			: in	unsigned (7 downto 0);
-		inter_active: in	std_logic;
-		carry		: out	STD_LOGIC;
-		zero		: out	STD_LOGIC;
-		reg_value	: out	unsigned (7 downto 0);
-		reg_we		: out	std_logic;
-		reg_reg0	: in	unsigned (7 downto 0);
-		reg_reg1	: in	unsigned (7 downto 0)
+		clk				: in	STD_LOGIC;
+		clk2			: in	STD_LOGIC;
+		reset			: in	STD_LOGIC;
+		sleep_int		: in	STD_LOGIC;
+		opcode			: in	unsigned (5 downto 0);
+--		opA				: in	unsigned (3 downto 0);
+		opB				: in	unsigned (7 downto 0);
+		preserve_flags	: in	std_logic;
+		restore_flags	: in	std_logic;
+		carry			: out	STD_LOGIC;
+		zero			: out	STD_LOGIC;
+		
+		reg_value		: out	unsigned (7 downto 0);
+		reg_we			: out	std_logic;
+		reg_reg0		: in	unsigned (7 downto 0);
+		reg_reg1		: in	unsigned (7 downto 0)
 		
 --		debugS_alu	: out	debug_signals
 		);
@@ -61,6 +63,7 @@ architecture Behavioral of ALU is
 	signal result			: unsigned(7 downto 0);
 	signal res_valid		: std_logic;	-- result should be written to register
 	
+	signal inter_flank : std_logic;
 	signal carry_c	: std_logic;
 	signal carry_o	: std_logic;
 	signal carry_i	: std_logic;	-- saved during interrupt
@@ -236,12 +239,19 @@ begin
 			if (reset = '1') then
 				carry_o <= '0';
 				zero_o <= '0';
+				carry_i <= '0';
+				zero_i <= '0';
 			else
-				if (inter_active = '1') then
+				if (preserve_flags = '1') then
 					-- preserve flags
-					-- -> decoder: preserve reg select
+					carry_i <= carry_o;
+					zero_i <= zero_o;
 				end if;
-				if (clk2 = '1') then
+				if (restore_flags = '1') then
+					-- restore flags
+					carry_o <= carry_i;
+					zero_o <= zero_i;
+				elsif (clk2 = '1') then
 					carry_o <= carry_c;
 					zero_o <= zero_c;
 				else

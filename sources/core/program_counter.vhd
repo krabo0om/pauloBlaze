@@ -89,12 +89,7 @@ begin
 					addr_o <= addr_next;
 					jmp_done <= '1';
 				elsif (inter_j = '1') then
-					if (call = '1' or jump = '1') then
-						-- use target address in case of interrupted jump or call
-						stack(pointer) <= jmp_addr;
-					else
-						stack(pointer) <= addr_o-1;
-					end if;
+					stack(pointer) <= addr_o-1;
 					pointer <= pointer + 1;
 					counter <= (interrupt_vector & '1') + ("" & '1');
 					addr_o <= interrupt_vector;

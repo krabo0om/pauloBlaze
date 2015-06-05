@@ -98,6 +98,8 @@ architecture Behavioral of pauloBlaze is
 	signal sleep_int	: std_logic;
 	signal bram_pause	: std_logic;
 	signal clk2_reset	: std_logic;
+	signal preserve_flags:std_logic;
+	signal restore_flags: std_logic;
 	
 	
 	
@@ -157,7 +159,8 @@ begin
 		opcode			=> opcode,
 --		opA				=> opA,
 		opB				=> opB,
-		inter_active	=> inter_active,
+		preserve_flags	=> preserve_flags,
+		restore_flags	=> restore_flags,
 		carry			=> carry,
 		zero			=> zero,
 		reg_value		=> reg_value_a,
@@ -187,7 +190,8 @@ begin
 		call			=> call,
 		ret				=> ret,
 		inter_j			=> inter_j,
-		inter_active	=> inter_active,
+		preserve_flags	=> preserve_flags,
+		restore_flags	=> restore_flags,
 		jmp_addr		=> jmp_addr,
 		jump			=> jump,
 		io_op_in		=> io_op_in,

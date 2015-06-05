@@ -54,7 +54,8 @@ entity decoder is
 		call			: out	STD_LOGIC;
 		ret				: out	std_logic;
 		inter_j			: out	std_logic;
-		inter_active	: out	std_logic;
+		preserve_flags	: out	std_logic;
+		restore_flags	: out	std_logic;
 		jump			: out	STD_LOGIC;
 		jmp_addr		: out	unsigned (11 downto 0);
 		io_op_in		: out	std_logic;
@@ -75,39 +76,50 @@ end decoder;
 architecture Behavioral of decoder is
 	
 	signal reg_select_o : std_logic;
+	signal reg_select_i	: std_logic;
 	signal opCode_o		: unsigned (5 downto 0);
 	signal fetch		: std_logic;
 	signal store		: std_logic;
 	signal inter_en		: std_logic;
 	signal inter_j_o	: std_logic;
+	signal preserve_flags_o : std_logic;
+	signal restore_flags_o	: std_logic;
+	signal instr_used	: unsigned (17 downto 0);
 	signal sleep_int_o	: std_logic;
+	signal reg_sel_save	: std_logic;
 	
 	type sleep_state_t is (awake, sunset, lights_off, sleeping, dawn, sunrise);
 	signal sleep_state : sleep_state_t;
+	
+	type interrupt_state_t is (none, detected, waiting, stall, intent, interrupting, intend	);
+	signal inter_state : interrupt_state_t;
+	signal inter_state_nxt : interrupt_state_t;
 
 begin
 	opCode		<= opCode_o;
-	opCode_o	<= instruction(17 downto 12);
-	opA			<= instruction(11 downto 8);
-	opB			<= instruction(7 downto 0);
-	jmp_addr	<= instruction(11 downto 0);
+	opCode_o	<= instr_used(17 downto 12);
+	opA			<= instr_used(11 downto 8);
+	opB			<= instr_used(7 downto 0);
+	jmp_addr	<= instr_used(11 downto 0);
 
-	reg_address	<= instruction(11 downto 4);
+	reg_address	<= instr_used(11 downto 4);
 	reg_select	<= reg_select_o;
 	
-	spm_addr_ss	<= instruction(7 downto 0);
+	spm_addr_ss	<= instr_used(7 downto 0);
 	spm_ss 		<= opCode_o(0);
 	spm_rd 		<= fetch;
 	spm_we 		<= store;	
 	
-	io_op_out_pp	<= instruction(12);			-- constant value (pp) or register as data on the output
-	io_kk_data		<= instruction(11 downto 4);
-	io_kk_port		<= instruction(3 downto 0);
+	io_op_out_pp	<= instr_used(12);			-- constant value (pp) or register as data on the output
+	io_kk_data		<= instr_used(11 downto 4);
+	io_kk_port		<= instr_used(3 downto 0);
 	
 	sleep_int		<= sleep_int_o;
 	inter_j			<= inter_j_o;
+	
+	restore_flags	<= restore_flags_o;
 
-	decompose : process (instruction, reset, zero, carry, opCode_o) 
+	decompose : process (instr_used, reset, zero, carry, opCode_o) 
 	begin
 		jump <= '0';
 		call <= '0';
@@ -123,21 +135,21 @@ begin
 			when OP_JUMP_AAA => 
 				jump <= '1';
 			when OP_JUMP_Z_AAA | OP_JUMP_NZ_AAA =>
-				jump <= zero xor instruction(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
+				jump <= zero xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
 			when OP_JUMP_C_AAA | OP_JUMP_NC_AAA =>
-				jump <= carry xor instruction(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
+				jump <= carry xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
 			when OP_CALL_AAA =>
 				call <= '1';
 			when OP_CALL_Z_AAA | OP_CALL_NZ_AAA =>
-				call <= zero xor instruction(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
+				call <= zero xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
 			when OP_CALL_C_AAA | OP_CALL_NC_AAA =>
-				call <= carry xor instruction(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
+				call <= carry xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
 			when OP_RETURN | OP_RETURNI_DISABLE =>
 				ret <= '1';
 			when OP_RETURN_Z | OP_RETURN_NZ =>
-				ret <= zero xor instruction(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
+				ret <= zero xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
 			when OP_RETURN_C | OP_RETURN_NC =>
-				ret <= carry xor instruction(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
+				ret <= carry xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
 			when OP_INPUT_SX_SY | OP_INPUT_SX_PP =>
 				io_op_in <= '1';
 			when OP_OUTPUT_SX_SY | OP_OUTPUT_SX_PP =>
@@ -161,9 +173,14 @@ begin
 		if (rising_edge(clk)) then
 			if (reset = '1') then 
 				reg_select_o <= '0';
+				reg_sel_save <= '0';
 			else
-				if (opCode_o = OP_REGBANK_A) then
-					reg_select_o <= instruction(0);
+				if (preserve_flags_o = '1') then
+					reg_sel_save <= reg_select_o;
+				elsif (restore_flags_o = '1') then
+					reg_select_o <= reg_sel_save;
+				elsif (opCode_o = OP_REGBANK_A) then
+					reg_select_o <= instr_used(0);
 				else
 					reg_select_o <= reg_select_o;
 				end if;
@@ -171,21 +188,69 @@ begin
 		end if;
 	end process reg_proc;
 
-	inter_p : process (clk) begin
+	inter_en_p : process (clk) begin
 		if (rising_edge(clk)) then
 			if (reset = '1') then 
 				inter_en <= '0';
-				inter_j_o <= '0';
 			else
-				inter_j_o <= inter_en and interrupt and not clk2;
-				if (opCode_o = OP_ENABLE_INTERRUPT or opCode_o = OP_RETURNI_ENABLE or inter_j_o = '1') then
-					inter_en <= instruction(0) or inter_j_o;
+				if (opCode_o = OP_ENABLE_INTERRUPT or opCode_o = OP_RETURNI_ENABLE) then
+					inter_en <= instr_used(0);			-- bit 0 contains set/erase
 				else
 					inter_en <= inter_en;
 				end if;
 			end if;
 		end if;
-	end process inter_p;
+	end process inter_en_p;
+	
+	inter_state_com_p : process (inter_state, instruction, interrupt, inter_en, clk2, opCode_o) begin
+		instr_used <= instruction;
+		preserve_flags_o <= '0';
+		inter_j_o <= '0';
+		interrupt_ack <= '0';
+		restore_flags_o <= '0';
+		
+		case (inter_state) is
+		when none => 
+			if (interrupt = '1') then
+				inter_state_nxt <= detected;
+			end if;
+		when detected => 
+			if (inter_en = '1' and clk2 = '0') then
+				inter_state_nxt <= waiting;
+			end if;
+		when waiting => 
+			inter_state_nxt <= stall;
+		when stall => 
+			instr_used <= (others => '0');
+			preserve_flags_o <= '1';
+			inter_state_nxt <= intent;
+		when intent => 
+			inter_j_o <= '1';
+			interrupt_ack <= '1';
+			instr_used <= (others => '0');
+			inter_state_nxt <= interrupting;
+		when interrupting => 
+			if (opCode_o = OP_RETURNI_ENABLE and clk2 = '1') then
+				inter_state_nxt <= intend;
+				restore_flags_o <= '1';
+			end if;
+		when intend => 
+			inter_state_nxt <= none;
+		when others =>  inter_state_nxt <= none;
+		end case;
+	end process inter_state_com_p;
+	
+	inter_state_clk_p : process (clk) begin
+		if (rising_edge(clk)) then
+			if (reset = '1') then
+				inter_state <= none;	
+			else 
+				inter_state <= inter_state_nxt;	
+				preserve_flags	<= preserve_flags_o;
+			end if;
+		end if;
+	end process inter_state_clk_p;
+	
 
 	sleep_sm : process (clk) begin
 		if (rising_edge(clk)) then
@@ -243,16 +308,6 @@ begin
 			end if;
 		end if;	
 	end process sleep_sm;
-
-	placeholder : process (clk) begin
-		if (rising_edge(clk)) then
-			if (reset = '1') then 
-				interrupt_ack <= '0';
-			else
-				interrupt_ack <= inter_j_o;
-			end if;
-		end if;
-	end process placeholder;
 
 end Behavioral;
 
