@@ -339,8 +339,10 @@ begin
 		reset_bram_en <= '0';
 		case (reset_state) is 
 			when none => 
-				if (reset = '1' or rst_req = '1') then
+				if (reset = '1') then
 					reset_state_nxt <= detected;
+				elsif (rst_req = '1') then
+					reset_state_nxt <= holding;
 				end if;
 			when detected =>
 				if (clk2 = '1') then
@@ -357,7 +359,7 @@ begin
 			when bram_en =>
 				reset_bram_en <= '1';
 				reset_int_o <= '1';
-				if (clk2 = '0') then
+				if (clk2 = '1') then
 					reset_state_nxt <= none;
 				end if;
 			when others =>
