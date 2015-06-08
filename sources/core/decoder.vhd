@@ -41,6 +41,7 @@ entity decoder is
 		reset			: in	STD_LOGIC;
 		reset_int		: out	STD_LOGIC;
 		reset_bram_en	: out	STD_LOGIC;
+		rst_req			: in	std_logic;
 		sleep			: in	STD_LOGIC;
 		sleep_int		: out	STD_LOGIC;
 		bram_pause		: out	STD_LOGIC;
@@ -332,13 +333,13 @@ begin
 	end process sleep_sm;
 
 
-	rst_state_com_p : process (reset, reset_state, clk2) begin
+	rst_state_com_p : process (reset, rst_req, reset_state, clk2) begin
 		reset_state_nxt <= reset_state;
 		reset_int_o <= '0';
 		reset_bram_en <= '0';
 		case (reset_state) is 
 			when none => 
-				if (reset = '1') then
+				if (reset = '1' or rst_req = '1') then
 					reset_state_nxt <= detected;
 				end if;
 			when detected =>

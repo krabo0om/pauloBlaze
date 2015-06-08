@@ -37,6 +37,7 @@ entity program_counter is
 	Port (
 		clk			: in  STD_LOGIC;
 		reset		: in  STD_LOGIC;
+		rst_req		: out std_logic;
 		sleep_int	: in  STD_LOGIC;
 		bram_pause	: in  STD_LOGIC;
 		call		: in  STD_LOGIC;
@@ -73,6 +74,7 @@ begin
 				jmp_done <= '0';
 				stack <= (others => (others => '0'));
 				pointer <= 0;
+				rst_req <= '0';
 			else
 				if (bram_pause = '1') then
 					counter <= addr_o & '1';
@@ -80,24 +82,38 @@ begin
 					addr_o <= counter(12 downto 1);
 				elsif (ret = '1' and jmp_done <= '0') then
 					p := pointer - 1;
-					pointer <= p;
-					addr_next := stack(p);
---					if (inter_j = '0') then
---						addr_next := addr_next + 1;
---					end if;
-					counter <= addr_next & '1';
-					addr_o <= addr_next;
-					jmp_done <= '1';
+					if (p < 0) then
+						rst_req <= '1';
+					else
+						pointer <= p;
+						addr_next := stack(p);
+	--					if (inter_j = '0') then
+	--						addr_next := addr_next + 1;
+	--					end if;
+						counter <= addr_next & '1';
+						addr_o <= addr_next;
+						jmp_done <= '1';
+					end if;
 				elsif (inter_j = '1') then
 					stack(pointer) <= addr_o-1;
-					pointer <= pointer + 1;
-					counter <= (interrupt_vector & '1') + ("" & '1');
-					addr_o <= interrupt_vector;
-					jmp_done <= '1';
+					p := pointer + 1;
+					if (p > 30) then
+						rst_req <= '1';
+					else
+						pointer <= p;
+						counter <= (interrupt_vector & '1') + ("" & '1');
+						addr_o <= interrupt_vector;
+						jmp_done <= '1';
+					end if;
 				elsif (jmp_int = '1' and jmp_done <= '0') then
 					if (call = '1') then
 						stack(pointer) <= addr_o+1;
-						pointer <= pointer + 1;
+						p := pointer +1;
+						if (p > 29) then
+							rst_req <= '1';
+						else
+							pointer <= p;
+						end if;
 					end if;
 					counter <= jmp_addr & '1';
 					addr_o <= jmp_addr;

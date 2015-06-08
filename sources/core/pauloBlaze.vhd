@@ -75,6 +75,7 @@ architecture Behavioral of pauloBlaze is
 	signal zero				: STD_LOGIC;
 
 	-- signals pc in
+	signal rst_req		: STD_LOGIC;
 	signal ret			: STD_LOGIC;
 	signal call			: STD_LOGIC;
 	signal jump			: STD_LOGIC;
@@ -140,6 +141,7 @@ begin
 	port map (
 		clk			=> clk,
 		reset		=> reset_int,
+		rst_req		=> rst_req,
 		sleep_int	=> sleep_int,
 		bram_pause	=> bram_pause,
 		call		=> call,
@@ -180,6 +182,7 @@ begin
 		reset			=> reset,
 		reset_int		=> reset_int,
 		reset_bram_en	=> reset_bram_en,
+		rst_req			=> rst_req,
 		sleep			=> sleep,
 		sleep_int		=> sleep_int,
 		bram_pause		=> bram_pause,
