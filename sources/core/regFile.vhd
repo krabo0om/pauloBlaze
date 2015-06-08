@@ -56,15 +56,15 @@ end reg_file;
 architecture Behavioral of reg_file is
 
 	type reg_file_t is array (31 downto 0) of unsigned(7 downto 0);
-	signal reg : reg_file_t;
+	signal reg 			: reg_file_t := (others=>(others=>'0'));
 
 	type scratchpad_t is array(integer range <>) of unsigned(7 downto 0);
-	signal scratchpad		: scratchpad_t((scratch_pad_memory_size-1) downto 0); 
-
+	signal scratchpad	: scratchpad_t((scratch_pad_memory_size-1) downto 0) := (others=>(others=>'0')); 
+ 
 	signal spm_addr_sel	: unsigned ( 7 downto 0);
 	signal spm_addr		: unsigned ( 7 downto 0);
 	constant spm_mask_w	: integer := log2ceil(scratch_pad_memory_size);	-- address failsafes into a truncated one
-	signal spm_mask	: unsigned (7 downto 0);
+	signal spm_mask		: unsigned (7 downto 0);
 	
 	signal reg0_buf		: unsigned ( 7 downto 0);
 	signal reg0_o		: unsigned ( 7 downto 0);
@@ -82,54 +82,46 @@ begin
 
 	write_reg : process (clk) begin
 		if rising_edge(clk) then
-			if (reset = '1') then
-				reg <= (others=>(others=>'0'));
-			else
-				if (write_en = '1') then
-					reg(to_integer(reg_select & reg_address(7 downto 4))) <= value;
-				elsif (spm_rd = '1') then
-					reg(to_integer(reg_select & reg_address(7 downto 4))) <=  scratchpad(to_integer(spm_addr));
-				end if;
+			if (write_en = '1') then
+				reg(to_integer(reg_select & reg_address(7 downto 4))) <= value;
+			elsif (spm_rd = '1') then
+				reg(to_integer(reg_select & reg_address(7 downto 4))) <=  scratchpad(to_integer(spm_addr));
 			end if;
 		end if;
 	end process write_reg;
 	
 	write_spm : process (clk) begin
 		if rising_edge(clk) then
-			if (reset = '1') then
-				scratchpad <= (others=>(others=>'0'));
-			else
-				if (spm_we = '1') then
-					scratchpad(to_integer(spm_addr)) <=  reg0_buf;
-				end if;
+			if (spm_we = '1') then
+				scratchpad(to_integer(spm_addr)) <=  reg0_buf;
 			end if;
 		end if;
 	end process write_spm;
 
 	buf_reg0_p : process (clk) begin
 		if rising_edge(clk) then
-			if (reset = '1') then
-				reg0_buf <= (others=>'0');
-				reg1_buf <= (others=>'0');
-			else
+--			if (reset = '1') then
+--				reg0_buf <= (others=>'0');
+--				reg1_buf <= (others=>'0');
+--			else
 				reg0_buf <= reg0_o;
 				reg1_buf <= reg1_o;
-			end if;
+--			end if;
 		end if;
 	end process buf_reg0_p;
 
 	read_reg : process(reset, reg, reg_address, reg_select, spm_rd, scratchpad, spm_addr) begin
-		if (reset = '1') then
-			reg0_o <= (others => '0');
-			reg1_o <= (others => '0');
-		else
+--		if (reset = '1') then
+--			reg0_o <= (others => '0');
+--			reg1_o <= (others => '0');
+--		else
 			if (spm_rd = '1') then
 				reg0_o <= scratchpad(to_integer(spm_addr));
 			else
 				reg0_o <= reg(to_integer(reg_select & reg_address(7 downto 4)));
 			end if;
 			reg1_o <= reg(to_integer(reg_select & reg_address(3 downto 0)));	
-		end if;
+--		end if;
 	end process read_reg;
 
 	

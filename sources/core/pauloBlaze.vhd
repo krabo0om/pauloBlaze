@@ -64,7 +64,7 @@ end pauloBlaze;
 
 architecture Behavioral of pauloBlaze is
 
-	signal clk2				: std_logic;		-- high during 2nd clk cycle 
+	signal clk2				: std_logic	:= '1';		-- high during 2nd clk cycle 
 
 	-- signals alu in
 	signal opcode			: unsigned(5 downto 0);
@@ -83,6 +83,8 @@ architecture Behavioral of pauloBlaze is
 	signal debug_alu	: debug_signals;
 	
 	-- signals decoder
+	signal reset_int	: std_logic;
+	signal reset_bram_en: std_logic;
 	signal io_op_in		: std_logic;
 	signal io_op_out	: std_logic;	
 	signal io_op_out_pp	: std_logic;	
@@ -101,8 +103,6 @@ architecture Behavioral of pauloBlaze is
 	signal preserve_flags:std_logic;
 	signal restore_flags: std_logic;
 	
-	
-	
 	-- general register file signals
 	signal reg_select	: std_logic;
 	signal reg_reg0		: unsigned (7 downto 0);
@@ -120,11 +120,13 @@ architecture Behavioral of pauloBlaze is
 	
 begin
 
-	bram_enable <= clk2 and not bram_pause when reset = '0' else '0';
+	bram_enable <= clk2 and not bram_pause when reset_int = '0' else reset_bram_en;
+	-- in case of a reset there is a state where reset_bram_en will be high for one clk cycle, just before 
+	-- the internal reset gets deasserted
 	
 	clk2_gen : process (clk) begin
 		if (rising_edge(clk)) then
-			if (reset = '1' or clk2_reset = '1') then
+			if (clk2_reset = '1') then
 				clk2 <= '1';
 			else 
 				clk2 <= not clk2;
@@ -137,7 +139,7 @@ begin
 		interrupt_vector => interrupt_vector )
 	port map (
 		clk			=> clk,
-		reset		=> reset,
+		reset		=> reset_int,
 		sleep_int	=> sleep_int,
 		bram_pause	=> bram_pause,
 		call		=> call,
@@ -150,11 +152,12 @@ begin
 	-- alu
 	alu_inst : entity work.ALU 
 	generic map (
+		hwbuild => hwbuild,
 		debug	=> debug ) 
 	PORT MAP (
 		clk				=> clk,
 		clk2			=> clk2,
-		reset			=> reset,
+		reset			=> reset_int,
 		sleep_int		=> sleep_int,
 		opcode			=> opcode,
 --		opA				=> opA,
@@ -175,6 +178,8 @@ begin
 		clk				=> clk,
 		clk2			=> clk2,
 		reset			=> reset,
+		reset_int		=> reset_int,
+		reset_bram_en	=> reset_bram_en,
 		sleep			=> sleep,
 		sleep_int		=> sleep_int,
 		bram_pause		=> bram_pause,
@@ -185,6 +190,8 @@ begin
 		opcode			=> opcode,
 		opA				=> opA,
 		opB				=> opB,
+		reg0			=> reg_reg0,
+		reg1			=> reg_reg1,
 		carry			=> carry,
 		zero			=> zero,
 		call			=> call,
@@ -215,7 +222,7 @@ begin
 		scratch_pad_memory_size => scratch_pad_memory_size
 	) port map (
 		clk				=> clk,
-		reset			=> reset,
+		reset			=> reset_int,
 		reg_address		=> reg_address,
 		reg_select		=> reg_select,
 		value			=> reg_value,
@@ -230,7 +237,8 @@ begin
 
 	io_inst	: entity work.io_module PORT MAP (
 		clk				=> clk,
-		reset			=> reset,
+		clk2			=> clk2,
+		reset			=> reset_int,
 		reg_value		=> reg_value_io,
 		reg_we			=> reg_we_io,
 		reg_reg0		=> reg_reg0,

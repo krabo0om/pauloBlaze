@@ -39,6 +39,8 @@ entity decoder is
 		clk				: in	STD_LOGIC;
 		clk2			: in	STD_LOGIC;
 		reset			: in	STD_LOGIC;
+		reset_int		: out	STD_LOGIC;
+		reset_bram_en	: out	STD_LOGIC;
 		sleep			: in	STD_LOGIC;
 		sleep_int		: out	STD_LOGIC;
 		bram_pause		: out	STD_LOGIC;
@@ -49,6 +51,8 @@ entity decoder is
 		opCode			: out	unsigned (5 downto 0);
 		opA				: out	unsigned (3 downto 0);
 		opB				: out	unsigned (7 downto 0);
+		reg0			: in	unsigned (7 downto 0);
+		reg1			: in	unsigned (7 downto 0);
 		carry			: in	STD_LOGIC;
 		zero			: in	STD_LOGIC;
 		call			: out	STD_LOGIC;
@@ -75,6 +79,8 @@ end decoder;
 
 architecture Behavioral of decoder is
 	
+	signal reset_int_o	: std_logic;
+	signal reset_r		: std_logic;
 	signal reg_select_o : std_logic;
 	signal reg_select_i	: std_logic;
 	signal opCode_o		: unsigned (5 downto 0);
@@ -87,6 +93,7 @@ architecture Behavioral of decoder is
 	signal instr_used	: unsigned (17 downto 0);
 	signal sleep_int_o	: std_logic;
 	signal reg_sel_save	: std_logic;
+	signal sxy_addr		: std_logic;
 	
 	type sleep_state_t is (awake, sunset, lights_off, sleeping, dawn, sunrise);
 	signal sleep_state : sleep_state_t;
@@ -95,12 +102,18 @@ architecture Behavioral of decoder is
 	signal inter_state : interrupt_state_t;
 	signal inter_state_nxt : interrupt_state_t;
 
+	type reset_state_t is (none, detected, finishing, holding, bram_en);
+	signal reset_state : reset_state_t;
+	signal reset_state_nxt : reset_state_t;
+
 begin
+	reset_int	<= reset_int_o;
+	
 	opCode		<= opCode_o;
 	opCode_o	<= instr_used(17 downto 12);
 	opA			<= instr_used(11 downto 8);
 	opB			<= instr_used(7 downto 0);
-	jmp_addr	<= instr_used(11 downto 0);
+	jmp_addr	<= instr_used(11 downto 0) when sxy_addr = '0' else reg0(3 downto 0) & reg1;
 
 	reg_address	<= instr_used(11 downto 4);
 	reg_select	<= reg_select_o;
@@ -119,9 +132,10 @@ begin
 	
 	restore_flags	<= restore_flags_o;
 
-	decompose : process (instr_used, reset, zero, carry, opCode_o) 
+	decompose : process (instr_used, reset_int_o, zero, carry, opCode_o) 
 	begin
 		jump <= '0';
+		sxy_addr <= '0';
 		call <= '0';
 		ret <= '0';
 		io_op_in <= '0';
@@ -130,21 +144,27 @@ begin
 		fetch <= '0';
 		store <= '0';
 		
-		if (reset = '0') then
+		if (reset_int_o = '0') then
 			case opCode_o is
 			when OP_JUMP_AAA => 
 				jump <= '1';
+			when OP_JUMP_SX_SY =>
+				jump <= '1';
+				sxy_addr <= '1';
 			when OP_JUMP_Z_AAA | OP_JUMP_NZ_AAA =>
 				jump <= zero xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
 			when OP_JUMP_C_AAA | OP_JUMP_NC_AAA =>
 				jump <= carry xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
 			when OP_CALL_AAA =>
 				call <= '1';
+			when OP_CALL_SX_SY =>
+				call <= '1';
+				sxy_addr <= '1';
 			when OP_CALL_Z_AAA | OP_CALL_NZ_AAA =>
 				call <= zero xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
 			when OP_CALL_C_AAA | OP_CALL_NC_AAA =>
 				call <= carry xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> C; 1 -> NC
-			when OP_RETURN | OP_RETURNI_DISABLE =>
+			when OP_RETURN | OP_RETURNI_DISABLE | OP_LOADRETURN_SX_KK =>
 				ret <= '1';
 			when OP_RETURN_Z | OP_RETURN_NZ =>
 				ret <= zero xor instr_used(14);	-- inst(14) == opCode_o(2): 0 -> Z; 1 -> NZ
@@ -171,7 +191,7 @@ begin
 
 	reg_proc : process (clk) begin
 		if (rising_edge(clk)) then
-			if (reset = '1') then 
+			if (reset_int_o = '1') then 
 				reg_select_o <= '0';
 				reg_sel_save <= '0';
 			else
@@ -181,6 +201,8 @@ begin
 					reg_select_o <= reg_sel_save;
 				elsif (opCode_o = OP_REGBANK_A) then
 					reg_select_o <= instr_used(0);
+				elsif (opCode_o = OP_STAR_SX_SY and clk2 = '0') then
+					reg_select_o <= not reg_select_o;
 				else
 					reg_select_o <= reg_select_o;
 				end if;
@@ -190,7 +212,7 @@ begin
 
 	inter_en_p : process (clk) begin
 		if (rising_edge(clk)) then
-			if (reset = '1') then 
+			if (reset_int_o = '1') then 
 				inter_en <= '0';
 			else
 				if (opCode_o = OP_ENABLE_INTERRUPT or opCode_o = OP_RETURNI_ENABLE) then
@@ -242,7 +264,7 @@ begin
 	
 	inter_state_clk_p : process (clk) begin
 		if (rising_edge(clk)) then
-			if (reset = '1') then
+			if (reset_int_o = '1') then
 				inter_state <= none;	
 			else 
 				inter_state <= inter_state_nxt;	
@@ -254,7 +276,7 @@ begin
 
 	sleep_sm : process (clk) begin
 		if (rising_edge(clk)) then
-			if (reset = '1') then 
+			if (reset_int_o = '1') then 
 				if (sleep = '1') then
 					sleep_state <= sleeping;
 					bram_pause <= '1';
@@ -309,5 +331,43 @@ begin
 		end if;	
 	end process sleep_sm;
 
-end Behavioral;
 
+	rst_state_com_p : process (reset, reset_state, clk2) begin
+		reset_state_nxt <= reset_state;
+		reset_int_o <= '0';
+		reset_bram_en <= '0';
+		case (reset_state) is 
+			when none => 
+				if (reset = '1') then
+					reset_state_nxt <= detected;
+				end if;
+			when detected =>
+				if (clk2 = '1') then
+					reset_state_nxt <= finishing;
+				end if;
+			when finishing =>
+				reset_int_o <= '1';
+				reset_state_nxt <= holding;
+			when holding =>
+				reset_int_o <= '1';
+				if (reset = '0') then
+					reset_state_nxt <= bram_en;
+				end if;
+			when bram_en =>
+				reset_bram_en <= '1';
+				reset_int_o <= '1';
+				if (clk2 = '0') then
+					reset_state_nxt <= none;
+				end if;
+			when others =>
+				reset_state_nxt <= none;
+		end case;
+	end process rst_state_com_p;
+	
+	rst_state_clk_p : process (clk) begin
+		if (rising_edge(clk)) then
+			reset_state <= reset_state_nxt;
+		end if;
+	end process rst_state_clk_p;
+
+end Behavioral;

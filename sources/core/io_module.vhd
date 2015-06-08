@@ -34,6 +34,7 @@ use work.op_codes.all;
 entity io_module is
     Port (
 		clk				: in  STD_LOGIC;
+		clk2			: in  STD_LOGIC;
 		reset			: in  std_logic;
 		reg_value		: out unsigned (7 downto 0);
 		reg_we			: out std_logic;
@@ -59,14 +60,13 @@ end io_module;
 architecture Behavioral of io_module is
 	
 	signal strobe_o : std_logic;
-	signal clk_cycle2 : std_logic;
 
 begin
 	
 	reg_value		<= in_port;
-	read_strobe		<= io_op_in and strobe_o and clk_cycle2;
-	write_strobe	<= io_op_out and strobe_o and clk_cycle2;
-	k_write_strobe	<= io_kk_en and strobe_o and clk_cycle2;
+	read_strobe		<= io_op_in and strobe_o and clk2;
+	write_strobe	<= io_op_out and strobe_o and clk2;
+	k_write_strobe	<= io_kk_en and strobe_o and clk2;
 	reg_we			<= io_op_in;			-- FIXME!! ???
 	
 	out_proc : process (reset, out_data, reg_reg0, reg_reg1, io_kk_en, io_kk_port, io_kk_data, io_op_out_pp) begin		
@@ -92,14 +92,12 @@ begin
 		if (rising_edge(clk)) then		
 			if (reset = '1') then
 				strobe_o <= '0';
-				clk_cycle2 <= '1';
 			else
 				if ((io_op_in or io_op_out) = '1') then
 					strobe_o <= '1';
 				else
 					strobe_o <= '0';
 				end if;
-				clk_cycle2 <= not clk_cycle2;
 			end if;
 		end if;
 	end process;

@@ -72,7 +72,8 @@ ARCHITECTURE behavior OF tb_pauloB IS
    signal prog_mem_en : std_logic;
    signal done : std_logic;
    signal sleep_en : std_logic := '0';
-   signal inter_en : std_logic := '1';
+   signal inter_en : std_logic := '0';
+   signal reset_en : std_logic := '0';
    
    constant real_prog : boolean := true;
  
@@ -82,6 +83,7 @@ BEGIN
 	generic map (
 		debug => true,
 		interrupt_vector => x"300", 
+		hwbuild => x"41",
 		scratch_pad_memory_size => 64 )
 	PORT MAP (
 --		clk => clk_5ns_delayed,
@@ -138,6 +140,7 @@ BEGIN
 			wait;
 		end process inter_static;
 		
+		
 --		inter_gen : process
 --		  VARIABLE seed : integer := 1312312;
 --		  VARIABLE seed2 : integer := 324412;
@@ -174,6 +177,12 @@ BEGIN
 			wait until done = '1';
 			wait until clk = '1';
 			reset <= '0';
+			if (reset_en = '1') then
+				wait for 465 ns;
+				reset <= '1';
+				wait for 86 ns;
+				reset <= '0';
+			end if;
 			wait;
 		end process;
 	
