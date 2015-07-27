@@ -106,6 +106,7 @@ architecture Behavioral of pauloBlaze is
 	
 	-- general register file signals
 	signal reg_select	: std_logic;
+	signal reg_star		: std_logic;
 	signal reg_reg0		: unsigned (7 downto 0);
 	signal reg_reg1		: unsigned (7 downto 0);
 	signal reg_address	: unsigned (7 downto 0);	
@@ -212,14 +213,15 @@ begin
 		io_kk_data		=> io_kk_data,
 		reg_address		=> reg_address,
 		reg_select		=> reg_select,
+		reg_star		=> reg_star,
 		spm_addr_ss		=> spm_addr_ss,
 		spm_ss			=> spm_ss,
 		spm_we			=> spm_we,
 		spm_rd			=> spm_rd
 	);
 	
-	reg_value <= reg_value_io when (io_op_in or io_op_out) = '1' else reg_value_a;
-	reg_we <= reg_we_io when (io_op_in) = '1' else reg_we_a;
+	reg_value <= reg_value_io when (io_op_in or io_op_out) = '1' else reg_value_a when reg_we_a = '1' else reg_reg0;
+	reg_we <= reg_we_io or reg_we_a or reg_star or spm_rd;
 
 	register_file : entity work.reg_file generic map (
 		scratch_pad_memory_size => scratch_pad_memory_size
@@ -228,6 +230,7 @@ begin
 		reset			=> reset_int,
 		reg_address		=> reg_address,
 		reg_select		=> reg_select,
+		reg_star		=> reg_star,
 		value			=> reg_value,
 		write_en		=> reg_we,
 		reg0			=> reg_reg0,

@@ -82,7 +82,7 @@ begin
 
 	carry		<= carry_o;
 	zero		<= zero_o;
-
+	
 	op : process (reset, opcode, opB, carry_o, zero_o, reg_reg0, reg_reg1, clk2) 
 		variable opB_value	: unsigned(7 downto 0);
 		variable opA_value	: unsigned(7 downto 0);
@@ -119,12 +119,13 @@ begin
 					result_v := padding & opB_value;
 					res_valid <= '1';
 				when OP_STAR_SX_SY =>
-					if (clk2 = '0') then
-						result_v := padding & opB_value;
-					else
-						result_v := result_v;
-					end if;
-					res_valid <= '1';
+--					if (clk2 = '0') then
+--						result_v := padding & opB_value;
+--						res_valid <= '1';						
+--					else
+--						result_v := result_v;
+--						res_valid <= '0';
+--					end if;
 				--Logical
 				when OP_AND_SX_SY | OP_AND_SX_KK =>
 					result_v := padding & (opA_value and opB_value);

@@ -71,6 +71,7 @@ entity decoder is
 		io_kk_data		: out	unsigned (7 downto 0);
 		reg_address		: out	unsigned (7 downto 0);
 		reg_select		: out	std_logic;
+		reg_star		: out	std_logic;
 		spm_addr_ss		: out	unsigned (7 downto 0);
 		spm_ss			: out	std_logic;				-- 0: spm_addr = reg1, 1: spm_addr = spm_addr_ss		
 		spm_we			: out	std_logic;
@@ -121,8 +122,7 @@ begin
 	
 	spm_addr_ss	<= instr_used(7 downto 0);
 	spm_ss 		<= opCode_o(0);
-	spm_rd 		<= fetch;
-	spm_we 		<= store;	
+	spm_rd 		<= fetch;	
 	
 	io_op_out_pp	<= instr_used(12);			-- constant value (pp) or register as data on the output
 	io_kk_data		<= instr_used(11 downto 4);
@@ -196,16 +196,18 @@ begin
 				reg_select_o <= '0';
 				reg_sel_save <= '0';
 			else
+				reg_star <= '0';
+				spm_we 		<= store and not clk2;
+				
 				if (preserve_flags_o = '1') then
 					reg_sel_save <= reg_select_o;
 				elsif (restore_flags_o = '1') then
 					reg_select_o <= reg_sel_save;
 				elsif (opCode_o = OP_REGBANK_A) then
 					reg_select_o <= instr_used(0);
-				elsif (opCode_o = OP_STAR_SX_SY and clk2 = '0') then
+				elsif (opCode_o = OP_STAR_SX_SY) then
 					reg_select_o <= not reg_select_o;
-				else
-					reg_select_o <= reg_select_o;
+					reg_star <= '1';
 				end if;
 			end if;
 		end if;

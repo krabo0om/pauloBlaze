@@ -85,7 +85,7 @@ begin
 	begin
 		if (rising_edge(clk)) then
 			if (reset = '1') then
-				counter <= x"001" & '1';
+				counter <= x"001" & '0';
 				addr_o <= (others => '0');
 				jmp_done <= '0';
 				--stack <= (others => (others => '0'));
