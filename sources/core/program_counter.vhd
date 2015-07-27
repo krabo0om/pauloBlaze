@@ -32,7 +32,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity program_counter is
 	generic (
-		interrupt_vector : unsigned(11 downto 0) := X"3FF"
+		interrupt_vector : unsigned(11 downto 0) := X"3FF";
+		stack_depth : positive := 30
 	);
 	Port (
 		clk			: in  STD_LOGIC;
@@ -50,9 +51,24 @@ end program_counter;
 
 architecture Behavioral of program_counter is
 
-	type stack_t is array (29 downto 0) of unsigned(11 downto 0);
+	-- Logarithms: log*ceil*
+	-- From PoC-Library https://github.com/VLSI-EDA/PoC
+	-- ==========================================================================
+	function log2ceil(arg : positive) return natural is
+	variable tmp : positive   := 1;
+	variable log : natural    := 0;
+	begin
+	if arg = 1 then return 0; end if;
+	while arg > tmp loop
+	  tmp := tmp * 2;
+	  log := log + 1;
+	end loop;
+	return log;
+	end function;
+
+	type stack_t is array (stack_depth-1 downto 0) of unsigned(11 downto 0);
 	signal stack	: stack_t;
-	signal pointer	: integer range 0 to 29;
+	signal pointer	: unsigned (log2ceil(stack_depth) downto 0);
 	signal counter	: unsigned (12 downto 0);
 	signal jmp_int	: std_logic;
 	signal jmp_done	: std_logic;
@@ -64,7 +80,7 @@ begin
 	address	<= interrupt_vector when inter_j = '1' else addr_o ;
 
 	clken : process (clk) 
-		variable p : integer;
+		variable p : unsigned(pointer'range);
 		variable addr_next : unsigned (11 downto 0);
 	begin
 		if (rising_edge(clk)) then
@@ -72,8 +88,8 @@ begin
 				counter <= x"001" & '1';
 				addr_o <= (others => '0');
 				jmp_done <= '0';
-				stack <= (others => (others => '0'));
-				pointer <= 0;
+				--stack <= (others => (others => '0'));
+				pointer <= (others => '0');
 				rst_req <= '0';
 			else
 				if (bram_pause = '1') then
@@ -82,11 +98,11 @@ begin
 					addr_o <= counter(12 downto 1);
 				elsif (ret = '1' and jmp_done <= '0') then
 					p := pointer - 1;
-					if (p < 0) then
+					if (p = (pointer'range => '1')) then
 						rst_req <= '1';
 					else
 						pointer <= p;
-						addr_next := stack(p);
+						addr_next := stack(to_integer(p));
 	--					if (inter_j = '0') then
 	--						addr_next := addr_next + 1;
 	--					end if;
@@ -95,9 +111,9 @@ begin
 						jmp_done <= '1';
 					end if;
 				elsif (inter_j = '1') then
-					stack(pointer) <= addr_o-1;
+					stack(to_integer(pointer)) <= addr_o-1;
 					p := pointer + 1;
-					if (p > 30) then
+					if (p > stack_depth) then
 						rst_req <= '1';
 					else
 						pointer <= p;
@@ -107,9 +123,9 @@ begin
 					end if;
 				elsif (jmp_int = '1' and jmp_done <= '0') then
 					if (call = '1') then
-						stack(pointer) <= addr_o+1;
+						stack(to_integer(pointer)) <= addr_o+1;
 						p := pointer +1;
-						if (p > 29) then
+						if (p > stack_depth-1) then
 							rst_req <= '1';
 						else
 							pointer <= p;

@@ -24,8 +24,8 @@ use IEEE.NUMERIC_STD.ALL;
 library work;
 use	work.op_codes.all;
 
-library poc;
-use poc.utils.all;
+--library poc;
+--use poc.utils.all;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -54,6 +54,33 @@ entity reg_file is
 end reg_file;
 
 architecture Behavioral of reg_file is
+
+	-- Logarithms: log*ceil*
+	-- From PoC-Library https://github.com/VLSI-EDA/PoC
+	-- ==========================================================================
+	function log2ceil(arg : positive) return natural is
+	variable tmp : positive   := 1;
+	variable log : natural    := 0;
+	begin
+	if arg = 1 then return 0; end if;
+	while arg > tmp loop
+	  tmp := tmp * 2;
+	  log := log + 1;
+	end loop;
+	return log;
+	end function;
+	
+	-- generate bit masks
+	-- From PoC-Library https://github.com/VLSI-EDA/PoC
+	-- ==========================================================================
+	FUNCTION genmask_low(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+	IF (Bits = 0) THEN
+	  RETURN (MaskLength - 1 DOWNTO 0 => '0');
+	ELSE
+	  RETURN (MaskLength - 1 DOWNTO Bits => '0') & (Bits - 1 DOWNTO 0 => '1');
+	END IF;
+	END FUNCTION;	
 
 	type reg_file_t is array (31 downto 0) of unsigned(7 downto 0);
 	signal reg 			: reg_file_t := (others=>(others=>'0'));

@@ -202,11 +202,11 @@ begin
 							zero_c <= zero_o;
 						end if;
 					else
-						zero_c <= padding;	-- dont care also possible
+						zero_c <= '0';
 					end if;
 					
 					carry_c <= result_v(8);
-				--Shift and Rotate ... and hwbuild
+				--Shift and Rotate ... and hwbuild OP_HWBUILD_SX
 				when OP_SL0_SX =>
 					if (opB(7) = '1') then		-- hw build op
 						result_v := padding & hwbuild;

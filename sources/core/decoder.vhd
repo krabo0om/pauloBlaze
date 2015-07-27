@@ -226,6 +226,7 @@ begin
 	end process inter_en_p;
 	
 	inter_state_com_p : process (inter_state, instruction, interrupt, inter_en, clk2, opCode_o) begin
+		inter_state_nxt <= inter_state;
 		instr_used <= instruction;
 		preserve_flags_o <= '0';
 		inter_j_o <= '0';
