@@ -1,11 +1,31 @@
+-- EMACS settings: -*- tab-width: 4; indent-tabs-mode: t -*-
+-- vim: tabstop=4:shiftwidth=4:noexpandtab
+-- kate: tab-width 4; replace-tabs off; indent-width 4;
 --
---	Package File Template
+-- =============================================================================
+-- Authors: Paul Genssler
 --
---	Purpose: This package defines supplemental types, subtypes, 
---		 constants, and functions 
+-- Description:
+-- ------------------------------------
+-- TODO
 --
--- " To use any of the example code shown below, uncomment the lines and modify as necessary
+-- License:
+-- =============================================================================
+-- Copyright 2007-2015 Paul Genssler - Dresden, Germany
 --
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+-- http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS is" BASIS,
+-- WITHOUT WARRANTIES or CONDITIONS of ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -99,30 +119,4 @@ end op_codes;
 
 package body op_codes is
 
----- Example 1
--- "function <function_name> "(signal <signal_name> : in <type_declaration> ") return <type_declaration> is
--- " "variable <variable_name> " " : <type_declaration>";
--- "begin
--- " "<variable_name> := <signal_name> xor <signal_name>";
--- " "return <variable_name>"; 
--- "end <function_name>";
-
----- Example 2
--- "function <function_name> "(signal <signal_name> : in <type_declaration>";
--- " " " " " " " " " " " " signal <signal_name> " : in <type_declaration> ") return <type_declaration> is
--- "begin
--- " "if (<signal_name> = '1') then
--- " " "return <signal_name>";
--- " "else
--- " " "return 'Z'";
--- " "end if";
--- "end <function_name>";
-
----- Procedure Example
--- "procedure <procedure_name> "(<type_declaration> <constant_name> ": in <type_declaration>) is
--- " "
--- "begin
--- " "
--- "end <procedure_name>";
- 
 end op_codes;
