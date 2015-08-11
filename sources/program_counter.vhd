@@ -39,7 +39,6 @@ entity program_counter is
 		clk			: in  STD_LOGIC;
 		reset		: in  STD_LOGIC;
 		rst_req		: out std_logic;
-		sleep_int	: in  STD_LOGIC;
 		bram_pause	: in  STD_LOGIC;
 		call		: in  STD_LOGIC;
 		ret			: in  std_logic;
@@ -68,7 +67,7 @@ architecture Behavioral of program_counter is
 
 	type stack_t is array (stack_depth-1 downto 0) of unsigned(11 downto 0);
 	signal stack	: stack_t;
-	signal pointer	: unsigned (log2ceil(stack_depth) downto 0);
+	signal pointer	: unsigned (log2ceil(stack_depth)-1 downto 0);
 	signal counter	: unsigned (12 downto 0);
 	signal jmp_int	: std_logic;
 	signal jmp_done	: std_logic;
@@ -109,7 +108,7 @@ begin
 				elsif (inter_j = '1') then
 					stack(to_integer(pointer)) <= addr_o-1;
 					p := pointer + 1;
-					if (p > stack_depth) then
+					if (p = (pointer'range => '1')) then
 						rst_req <= '1';
 					else
 						pointer <= p;

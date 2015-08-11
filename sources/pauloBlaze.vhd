@@ -43,13 +43,13 @@ entity pauloBlaze is
 		reset : in std_logic;
 		sleep : in std_logic;
 		-- instruction memory
-		address : out unsigned(11 downto 0);
-		instruction : in unsigned(17 downto 0);
+		address : out std_logic_vector(11 downto 0);
+		instruction : in std_logic_vector(17 downto 0);
 		bram_enable : out std_logic;
 		-- i/o ports
-		in_port : in unsigned(7 downto 0);
-		out_port : out unsigned(7 downto 0);
-		port_id : out unsigned(7 downto 0);
+		in_port : in std_logic_vector(7 downto 0);
+		out_port : out std_logic_vector(7 downto 0);
+		port_id : out std_logic_vector(7 downto 0);
 		write_strobe : out std_logic;
 		k_write_strobe : out std_logic;
 		read_strobe : out std_logic;
@@ -61,6 +61,13 @@ end pauloBlaze;
 architecture Behavioral of pauloBlaze is
 
 	signal clk2 : std_logic := '1'; -- high during 2nd clk cycle
+
+	-- used for converting from slv to my internal unsigned
+	signal address_u		: unsigned(11 downto 0);
+	signal instruction_u	: unsigned(17 downto 0);
+	signal in_port_u		: unsigned(7 downto 0);
+	signal out_port_u		: unsigned(7 downto 0);
+	signal port_id_u		: unsigned(7 downto 0);
 
 	-- signals alu in
 	signal opcode : unsigned(5 downto 0);
@@ -128,7 +135,13 @@ begin
 			end if;
 		end if; 
 	end process clk2_gen;
- 
+	
+	address			<= std_logic_vector(address_u);
+	instruction_u	<= unsigned(instruction);
+	in_port_u		<= unsigned(in_port);
+	out_port		<= std_logic_vector(out_port_u);
+	port_id			<= std_logic_vector(port_id_u);
+
 	pc : entity work.program_counter 
 		generic map(
 			interrupt_vector => interrupt_vector 
@@ -137,14 +150,13 @@ begin
 			clk         => clk, 
 			reset       => reset_int, 
 			rst_req     => rst_req, 
-			sleep_int   => sleep_int, 
 			bram_pause  => bram_pause, 
 			call        => call, 
 			ret         => ret, 
 			inter_j     => inter_j, 
 			jump        => jump, 
 			jmp_addr    => jmp_addr, 
-			address     => address 
+			address     => address_u 
 		);
 
 	-- alu
@@ -188,7 +200,7 @@ begin
 			clk2_reset               => clk2_reset, 
 			interrupt                => interrupt, 
 			interrupt_ack            => interrupt_ack, 
-			instruction              => instruction, 
+			instruction              => instruction_u, 
 			opcode                   => opcode, 
 			opA                      => opA, 
 			opB                      => opB, 
@@ -226,8 +238,7 @@ begin
 			scratch_pad_memory_size  => scratch_pad_memory_size
 		)
 		port map(
-			clk          => clk, 
-			reset        => reset_int, 
+			clk          => clk,
 			reg_address  => reg_address, 
 			reg_select   => reg_select, 
 			reg_star     => reg_star, 
@@ -258,9 +269,9 @@ begin
 			io_kk_port      => io_kk_port, 
 			io_kk_data      => io_kk_data, 
 			-- actual i/o module ports
-			in_port         => in_port, 
-			port_id         => port_id, 
-			out_port        => out_port, 
+			in_port         => in_port_u, 
+			port_id         => port_id_u, 
+			out_port        => out_port_u, 
 			read_strobe     => read_strobe, 
 			write_strobe    => write_strobe, 
 			k_write_strobe  => k_write_strobe

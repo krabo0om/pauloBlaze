@@ -87,8 +87,19 @@ begin
 		variable padding : std_logic;
 		variable tmp : std_logic;
 	begin
+	
+	 
+		opA_value := reg_reg0;
+		if (opcode (0) = '0') then -- LSB 0 = op_x sx, sy
+			opB_value := reg_reg1;
+		else -- LSB 1 = op_x sx, kk
+			opB_value := opB;
+		end if;
+	
 		if (debug) then
 			padding := '0'; --looks better during simulation
+			debug_opA_value <= opA_value;
+			debug_opB_value <= opB_value;
 		else
 			padding := '-';
 		end if;
@@ -97,17 +108,7 @@ begin
 		zero_c <= zero_o;
 		result_v := (others => padding);
 		partiy_v := '0';
- 
-		opA_value := reg_reg0;
-		if (opcode (0) = '0') then -- LSB 0 = op_x sx, sy
-			opB_value := reg_reg1;
-		else -- LSB 1 = op_x sx, kk
-			opB_value := opB;
-		end if;
- 
-		debug_opA_value <= opA_value;
-		debug_opB_value <= opB_value;
- 
+
 		if (reset = '0') then
 			case opcode is
 				--register loading
