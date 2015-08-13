@@ -73,8 +73,14 @@ architecture Behavioral of ALU is
 	signal debug_opB_value : unsigned(7 downto 0);
 
 begin
-	reg_value <= result;
-	reg_we <= clk2 and res_valid and not sleep_int;
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			reg_value <= result;
+			reg_we <= not clk2 and res_valid and not sleep_int;
+		end if;
+	end process;
 
 	carry <= carry_o;
 	zero <= zero_o;
@@ -87,8 +93,6 @@ begin
 		variable padding : std_logic;
 		variable tmp : std_logic;
 	begin
-	
-	 
 		opA_value := reg_reg0;
 		if (opcode (0) = '0') then -- LSB 0 = op_x sx, sy
 			opB_value := reg_reg1;

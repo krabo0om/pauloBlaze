@@ -262,7 +262,6 @@ begin
 			end if;
 		when intend => 
 			inter_state_nxt <= none;
-		when others =>  inter_state_nxt <= none;
 		end case;
 	end process inter_state_com_p;
 	
@@ -328,8 +327,6 @@ begin
 						sleep_int_o <= '0';
 						sleep_state <= awake;
 					end if;
-				when others =>
-					sleep_state <= awake;
 				end case;
 			end if;
 		end if;	
@@ -365,8 +362,6 @@ begin
 				if (clk2 = '1') then
 					reset_state_nxt <= none;
 				end if;
-			when others =>
-				reset_state_nxt <= none;
 		end case;
 	end process rst_state_com_p;
 	
