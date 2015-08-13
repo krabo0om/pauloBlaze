@@ -98,7 +98,6 @@ architecture Behavioral of pauloBlaze is
 	signal spm_we : std_logic;
 	signal spm_rd : std_logic;
 	signal inter_j : std_logic;
-	signal inter_active : std_logic;
 	signal sleep_int : std_logic;
 	signal bram_pause : std_logic;
 	signal clk2_reset : std_logic;

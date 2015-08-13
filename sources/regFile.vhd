@@ -78,7 +78,6 @@ architecture Behavioral of reg_file is
 	signal scratchpad	: scratchpad_t((scratch_pad_memory_size-1) downto 0) := (others=>(others=>'0')); 
  
 	constant spm_addr_width	: integer := log2ceil(scratch_pad_memory_size);	-- address failsafes into a truncated one
-	signal spm_addr_sel	: unsigned ( spm_addr_width-1 downto 0);
 	signal spm_addr		: unsigned ( spm_addr_width-1 downto 0);
 	
 	signal spm_read		: unsigned (7 downto 0);
