@@ -45,17 +45,16 @@ ARCHITECTURE behavior OF tb_pauloB IS
 	signal clk_5ns_enable : std_logic := '0';
 	signal reset : std_logic := '0';
 	signal sleep : std_logic := '0';
-	signal instruction : unsigned(17 downto 0) := (others => '0');
-	signal instruction_slv : std_logic_vector(17 downto 0) := (others => '0');
-	signal in_port : unsigned(7 downto 0) := (others => '0');
-	signal in_port_del : unsigned(7 downto 0) := (others => '0');
+	signal instruction : std_logic_vector(17 downto 0) := (others => '0');
+	signal in_port : std_logic_vector(7 downto 0) := (others => '0');
+	signal in_port_del : std_logic_vector(7 downto 0) := (others => '0');
 	signal interrupt : std_logic := '0';
 
 	--Outputs
-	signal address : unsigned(11 downto 0);
+	signal address : std_logic_vector(11 downto 0);
 	signal bram_enable : std_logic;
-	signal out_port : unsigned(7 downto 0);
-	signal port_id : unsigned(7 downto 0);
+	signal out_port : std_logic_vector(7 downto 0);
+	signal port_id : std_logic_vector(7 downto 0);
 	signal write_strobe : std_logic;
 	signal k_write_strobe : std_logic;
 	signal read_strobe : std_logic;
@@ -107,8 +106,6 @@ BEGIN
 		clk <= '1';
 		wait for clk_period/2;
 	end process;
- 
-	instruction <= unsigned(instruction_slv); 
 	
 	sleeping : process begin
 		if (sleep_en = '1') then
@@ -133,8 +130,8 @@ BEGIN
 
 	prog_mem : entity work.code_loader
 	Port map (
-		address => std_logic_vector(address),
-		instruction => instruction_slv,
+		address => address,
+		instruction => instruction,
 		enable => bram_enable,
 		done => done,
 		rdl => open,
