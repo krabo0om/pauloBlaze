@@ -10,7 +10,7 @@ CONSTANT Z_port, 08
 start:
 	ENABLE INTERRUPT
 	HWBUILD sF
-	JUMP test_star
+	JUMP test_star		; change to test_pc to test under/overflow
 
 test_star:
 	LOAD s0, 01
@@ -217,7 +217,7 @@ test_call:
 test_pc:
 	COMPARE sD, C9		; random value to switch between over and underflow test
 	JUMP NZ, test_underflow
-	JUMP test_overflow
+	CALL test_overflow
 
 test_overflow:
 	CALL test_overflow

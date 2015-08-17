@@ -33,7 +33,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity program_counter is
 	generic (
 		interrupt_vector : unsigned(11 downto 0) := X"3FF";
-		stack_depth : positive := 30
+		stack_depth : positive := 1
 	);
 	Port (
 		clk			: in  STD_LOGIC;
@@ -66,8 +66,8 @@ architecture Behavioral of program_counter is
 	end function;
 
 	type stack_t is array (stack_depth-1 downto 0) of unsigned(11 downto 0);
-	signal stack	: stack_t;
-	signal pointer	: unsigned (log2ceil(stack_depth)-1 downto 0);
+	signal stack	: stack_t := (others => (others => '0'));
+	signal pointer	: unsigned (log2ceil(stack_depth+1)-1 downto 0);
 	signal counter	: unsigned (12 downto 0);
 	signal jmp_int	: std_logic;
 	signal jmp_done	: std_logic;
@@ -79,7 +79,7 @@ begin
 	address	<= interrupt_vector when inter_j = '1' else addr_o ;
 
 	clken : process (clk) 
-		variable p : unsigned(pointer'range);
+		variable p : unsigned(pointer'left+1 downto 0);
 		variable addr_next : unsigned (11 downto 0);
 	begin
 		if (rising_edge(clk)) then
@@ -95,35 +95,35 @@ begin
 					jmp_done <= jmp_done;
 					addr_o <= counter(12 downto 1);
 				elsif (ret = '1' and jmp_done <= '0') then
-					p := pointer - 1;
-					if (p = (pointer'range => '1')) then
+					p := ('0' & pointer) - 1;
+					if (p = (p'range => '1')) then
 						rst_req <= '1';
 					else
-						pointer <= p;
+						pointer <= p(pointer'range);
 						addr_next := stack(to_integer(p));
 						counter <= addr_next & '1';
 						addr_o <= addr_next;
 						jmp_done <= '1';
 					end if;
 				elsif (inter_j = '1') then
-					stack(to_integer(pointer)) <= addr_o-1;
-					p := pointer + 1;
-					if (p = (pointer'range => '1')) then
+					p := ('0' & pointer) + 1;
+					if (p > stack_depth) then
 						rst_req <= '1';
 					else
-						pointer <= p;
+						stack(to_integer(pointer)) <= addr_o-1;
+						pointer <= p(pointer'range);
 						counter <= (interrupt_vector & '1') + ("" & '1');
 						addr_o <= interrupt_vector;
 						jmp_done <= '1';
 					end if;
 				elsif (jmp_int = '1' and jmp_done <= '0') then
 					if (call = '1') then
-						stack(to_integer(pointer)) <= addr_o+1;
-						p := pointer +1;
-						if (p > stack_depth-1) then
+						p := ('0' & pointer) +1;
+						if (p > stack_depth) then
 							rst_req <= '1';
 						else
-							pointer <= p;
+							stack(to_integer(pointer)) <= addr_o+1;
+							pointer <= p(pointer'range);
 						end if;
 					end if;
 					counter <= jmp_addr & '1';

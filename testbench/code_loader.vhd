@@ -85,7 +85,7 @@ begin
 		wait;
 	end process load_mem;
 
-	prog_mem : entity work.my1stP6 generic map (
+	prog_mem : entity work.test_assembler generic map (
 		C_FAMILY => "V6",
 		C_RAM_SIZE_KWORDS => 1,
 		C_JTAG_LOADER_ENABLE => 0)
