@@ -35,7 +35,8 @@ entity pauloBlaze is
 		debug : boolean := false;
 		hwbuild : unsigned(7 downto 0) := X"00";
 		interrupt_vector : unsigned(11 downto 0) := X"3FF";
-		scratch_pad_memory_size : integer := 64
+		scratch_pad_memory_size : integer := 64;
+		stack_depth : positive := 30
 	);
 	port (
 		-- control
@@ -143,7 +144,8 @@ begin
 
 	pc : entity work.program_counter 
 		generic map(
-			interrupt_vector => interrupt_vector 
+			interrupt_vector => interrupt_vector,
+			stack_depth => stack_depth
 		)
 		port map(
 			clk         => clk, 

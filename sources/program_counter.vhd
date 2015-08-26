@@ -33,7 +33,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity program_counter is
 	generic (
 		interrupt_vector : unsigned(11 downto 0) := X"3FF";
-		stack_depth : positive := 1
+		stack_depth : positive := 30
 	);
 	Port (
 		clk			: in  STD_LOGIC;
