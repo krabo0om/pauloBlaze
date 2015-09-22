@@ -1,0 +1,14 @@
+\chapter{Summary}
+\label{ch:sum}
+In this work a small 8-bit processor called PauloBlaze, which aims to replace the PicoBlaze, has been developed.
+This goal was achieved, one processor can replace the other and neither hardware nor software code have to be changed.
+Even though there are some compromises, the PauloBlaze offers useful features enabling it to compete.
+The PicoBlaze, a hand optimized design, is smaller than the new alternative.
+The user has to compensate an increase of up to \SI{150}{\percent}, but because of the initially low requirements, the overall resource usage increases only marginally.
+It is also faster than a PauloBlaze, it varies from a \SI{16.0}{\percent} to an only \SI{4.3}{\percent} slowdown.
+If the design does not require maximum speed or if fast 7-Series FPGAs are used, the difference is negligible.
+\\
+On the other hand the new processor provides the possibility for specific optimization or an easy implementation of new instructions, which may save many clock cycles.
+Furthermore the designer is not limited to the Spartan-6, Virtex-6 or 7-Series devices, the vendor independent description can be deployed everywhere, as long as the target supports VHDL.
+\\
+The PauloBlaze trades a small performance penalty for a far more adaptive model, providing flexible designers a very useful tool.

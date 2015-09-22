@@ -1,0 +1,203 @@
+\documentclass[11pt, a4paper, twoside, cleardoubleempty, openright, pointlessnumbers]{scrreprt} %draft
+%\usepackage[english]{babel}
+\usepackage{setspace}
+\usepackage{amsmath} 
+\usepackage[utf8]{inputenc}							% UTF-8 tex file input incoding
+\usepackage{amsmath}					% change font to be not so serific
+\usepackage[T1]{fontenc}	
+\usepackage{geometry}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{algorithmic}
+\usepackage{placeins}
+\usepackage{threeparttable}
+\usepackage[toc,page]{appendix}
+\usepackage{soul}
+\usepackage{siunitx}
+
+\usepackage[automark,headsepline]{scrpage2}
+\pagestyle{scrheadings}
+
+\clearscrheadfoot
+\automark[section]{chapter}
+\lehead[]{\leftmark}
+\rohead[]{\rightmark}
+\ofoot[\pagemark]{\pagemark}
+
+\usepackage{comment}
+\usepackage{bytefield}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[right]{eurosym}%Fuer Euro-Symbol
+\geometry{left=25mm,right=25mm,top=30mm,bottom=3cm}
+\setlength{\parindent}{0pt}
+\parskip 6pt
+\usepackage{lscape}
+\usepackage[footnote, printonlyused]{acronym}
+\usepackage[labelfont=bf]{caption}
+%\captionstyle{\centerlastline}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\usepackage{listings}
+\usepackage{tudscrcolor}
+\usepackage{courier}
+
+\usepackage[backend=biber,style=alphabetic]{biblatex}
+\addbibresource{Inhalt/Literatur.bib}
+
+\hypersetup{
+%    bookmarks=true,         			% show bookmarks bar?t p
+    unicode=false,          			% non-Latin characters in Acrobat?s bookmarks
+    pdftoolbar=true,        			% show Acrobat?s toolbar?
+    pdfmenubar=true,        			% show Acrobat?s menu?
+    pdffitwindow=false,     			% window fit to page when opened
+    pdfstartview={FitH},    			% fits the width of the page to the window
+    pdftitle={PauloBlaze},    % title
+    pdfauthor={Paul Genssler},     	% author
+    pdfsubject={Documentation of the PauloBlaze},   				% subject of the document
+    pdfcreator={Paul Genssler},   		% creator of the document
+    pdfproducer={}, 	% producer of the document
+    pdfkeywords={PauloBlaze, PicoBlaze, KCPSM6, Processor}, 				% list of keywords
+    pdfnewwindow=true,     			% links in new window
+    colorlinks=true,       			% false: boxed links; true: colored links
+    linkcolor=black,          			% color of internal links
+    citecolor=black,        			% color of links to bibliography
+    filecolor=black,      				% color of file links
+    urlcolor=black,           			% color of external links
+    pdfstartpage=1
+}
+
+%------------------Anfang Nummerierung Anhang-----------------
+ \renewcommand\appendix{\par 
+   \setcounter{section}{0}% 
+   \setcounter{subsection}{0}% 
+   \setcounter{figure}{0}%s
+   \renewcommand\thesection{\Alph{section}}% 
+   \renewcommand\thefigure{\Alph{section}.\arabic{figure}}} 
+%------------------Ende Nummerierung Anhang-----------------
+
+\newcommand{\getTitle}{PauloBlaze}
+
+\begin{document}
+		
+	\begin{center}
+	\thispagestyle{empty}
+	\mbox{}
+	\vspace{3\baselineskip}
+	
+	\textsc{\Large Technische Universität Dresden\\
+		Department of Computer Science\\
+		Institute for Computer Engineering\\
+		Chair for VLSI design, diagnostic and architecture\\ \vspace{2\baselineskip} }
+		
+	\vspace{2\baselineskip}
+		
+	\textbf{\LARGE Complex Training Period Processor Design \vspace{\baselineskip}}
+	
+	\vspace{2\baselineskip}
+	
+	\Large \getTitle{}
+
+	\vspace{2\baselineskip}
+		
+	\large Paul Richard Genßler\\
+	\small born on May 26, 1990 in Berlin\\
+	\small (Mat.-Nr.: 3569856)\\
+	\vspace{2\baselineskip}
+
+
+	\end{center}
+
+	\vspace{6\baselineskip}
+	\begin{minipage}[t]{8cm}
+		{\small Supervising Professor:}\\\large Prof. Dr.-Ing. habil. Rainer G. Spallek\\
+	\end{minipage}
+	
+	\begin{minipage}[t]{8cm}
+	{\small Adivsor:}\\\large Dipl.-Inf. Oliver Knodel\\
+	\end{minipage}
+
+	\vspace{2\baselineskip}
+
+
+	Dresden, \today
+	
+	
+	\newpage
+	
+	\setstretch{1,5}
+	
+	%---Leerseite--------->
+	\newpage
+	\mbox{}
+	\thispagestyle{empty}
+	\newpage
+	%--------------------->
+	
+	
+\setcounter{page}{3}
+
+\setstretch{1,2}	
+
+%\include{Inhalt/Kurzfassung}
+
+%\include{Inhalt/Abstract}
+
+	\newpage
+	\markboth{}{}
+	\setcounter{tocdepth}{3} %gliederung inhaltsverzeichnis
+	\setcounter{secnumdepth}{3} %nummerierung tiefe
+	\setstretch{1,3}% damit es genau auf die Seite passt
+	 \tableofcontents
+
+	\markboth{}{}
+	\newpage
+	
+	\setstretch{1,2}
+	
+	\clearscrheadfoot
+	\automark[section]{chapter}
+	\lehead[]{\leftmark}
+	\rohead[]{\rightmark}
+	\ofoot[\pagemark]{\pagemark}
+	
+	\cleardoublepage		%???
+	%---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	\pagenumbering{arabic}
+	\setcounter{page}{5}%Am Ende noch mal Kontrollieren!!!!
+	\setstretch{1,2}
+
+	\graphicspath{ {../diagrams/} }	
+	
+	\input{Inhalt/Einleitung/Einleitung}
+	\input{Inhalt/implementierung/impl}
+	\input{Inhalt/auswertung/auswertung}
+	\input{Inhalt/zusammenfassung/zusammenfassung}
+	
+	%---Leerseite--------->
+	\newpage
+	\mbox{}
+	\thispagestyle{empty}
+	\newpage
+	%--------------------->	
+	
+	\input{Inhalt/appendix/appendix}
+	
+			%---Leerseite--------->
+	\newpage
+	\mbox{}
+	\thispagestyle{empty}
+	\newpage
+	%--------------------->
+	
+	\setstretch{1,1}
+	
+%	\pagenumbering{Roman}
+%	\setcounter{page}{104}
+	\addcontentsline{toc}{chapter}{Bibliography}
+	\printbibliography
+		
+\end{document}
