@@ -3,30 +3,23 @@
 
 The PicoBlaze is implemented by the direct description of LUTs.
 This provides the desired speed and area advantages, but it is at the same time the biggest disadvantage.
-The core only works with Xilinx FPGAs providing 6-input LUTs, limiting it to Spartan-6, Virtex-6 and all 7-Series devices.
+The core only works with Xilinx FPGAs providing 6-input LUTs, limiting it to Virtex-5, Spartan-6, Virtex-6 and all 7-Series devices.
 \\
-This chapter describes the implementation of the PauloBlaze.
-It is written in pure VHDL code to provide maximum flexibility and portability.
-\\
-\\
-\emph{
-	This chapter aims to provide only an overview of the modules used in the PauloBlaze.
-	Because it is fully compatible, one may refer to the original documentation \cite{KCPSM6} for specific details and timing diagrams. 
-}
+This chapter describes the implementation of the PauloBlaze, which is written in pure VHDL code to provide maximum flexibility and portability.
+It consists of several components like the decoder (section~\ref{sec:decoder}), the program counter for jumps and calls (section~\ref{sec:pc}), the register file (section~\ref{sec:reg}) for interaction with the Scratch Pad Memory, simple calculation and data manipulation operations are handled by the ALU (section~\ref{sec:alu}) and the I/O module (section~\ref{sec:io}) takes care of input and output operations.
+Figure \ref{fig:dataflow} presents these components and the data flow between them.
+Because it is fully compatible to the PicoBlaze, one may refer to the original documentation \cite{KCPSM6} for specific details, available instructions and timing diagrams.
 
 %\section{Overview}
 %\label{sec:overview}
 %The PauloBlaze takes always two clock cycles for one instruction.
 %After the first cycle the address output is updated to request the next instruction from the program memory.
-
 \section{Decoder}
 \label{sec:decoder}
-The decoder is a critical component in the processor.
+This critical component in the processor is the interconnection point in the design as it can be seen in figure \ref{fig:controlflow}.
 It takes the complete 18-bit instruction word and evaluates it.
-The analysis triggers the responsible component, for jumps and calls the program counter (\ref{sec:pc}), the register file (\ref{sec:reg}) for interaction with the Scratch Pad Memory, simple calculation and data manipulation operations are handled by the ALU (\ref{sec:alu}) and the I/O module (\ref{sec:io}) takes care of input and output operations.
-\\ 
 Depending on the type of instruction, different word structures are possible.
-The most common instruction, after the 6-bit opcode, uses 4 bits to address the register and the remaining 8 bits as an immediate or to address a second register.
+The most common instructions are displayed in figure \ref{fig:bit_word}, after the 6-bit opcode, it uses 4 bits to address the register and the remaining 8 bits as an immediate or to address a second register.
 
 \begin{figure}[h]
 	\centering
@@ -40,28 +33,28 @@ The most common instruction, after the 6-bit opcode, uses 4 bits to address the 
 		\bitheader{0, 3, 4, 7, 8 ,11, 12, 17} \\
 		\bitbox{6}{opcode} & \bitbox{4}{reg A} & \bitbox{4}{reg B} & \bitbox{4}{unused}
 	\end{bytefield}
-	\caption{Bit patterns of common instruction}
+	\caption{Bit Patterns of common Instruction}
+	\label{fig:bit_word}
 \end{figure}
 
 It is also possible to use those 8 bits as a parameter.
 This is done in the shift and rotate operations extensively where the lower 4 bits determine which direction to shift and what happens to the shifted bit.
 \\
-The following opcodes are not used: $\text{17}_{16}$, $\text{23}_{16}$, $\text{27}_{16}$, $\text{2A}_{16}$, $\text{33}_{16}$, $\text{3B}_{16}$, $\text{3F}_{16}$
+Based on the PicoBlaze instruction table \cite[p.\,54]{KCPSM6}, the opcodes $\text{17}_{16}$, $\text{23}_{16}$, $\text{27}_{16}$, $\text{2A}_{16}$, $\text{33}_{16}$, $\text{3B}_{16}$, $\text{3F}_{16}$ are free and can be used to implement new instructions.
 \\
 External control signals like \emph{reset}, \emph{interrupt} or \emph{sleep} as well as internal ones (\emph{reset request}, \emph{zero}, \emph{carry}) will be processed by the decoder.
 
-
 \begin{figure}[H]
 	\sffamily
-\label{fig:controlflow}
-\centering
-\includegraphics[width=1.0\textwidth]{controlflow.pdf}
-\caption{Control Flow Graph}
+	\centering
+	\includegraphics[width=1.0\textwidth]{controlflow.pdf}
+	\caption{Control Flow Graph}
+	\label{fig:controlflow}
 \end{figure}
 
 \section{Program Counter}
 \label{sec:pc}
-The program counter calculates the next address which is incremented by one every second cycle during normal execution.
+The next address is calculated by the program counter, which increments it by one every second cycle during normal execution.
 The decoder drives the \emph{jmp\_addr} input used to determine the next address in case of a jump or a call.
 If the latter occurs, the program counter stores the subsequent address onto a stack and jumps to the target.
 After the interrupt or call has finished (using one of the return instructions), the topmost stack value is used as a jump target.
@@ -85,10 +78,10 @@ A bigger SPM demands more resources on the device.
 
 \begin{figure}[h]
 	\sffamily
-\label{fig:dataflow}
 \centering
 \includegraphics[width=1.0\textwidth]{dataflow.pdf}
 \caption{Data Flow Graph}
+\label{fig:dataflow}
 \end{figure}
 
 \section{ALU}
@@ -103,7 +96,7 @@ Thus, the ALU writes the result back into the first operands register, overridin
 
 \section{I/O Module}
 \label{sec:io}
-The I/O module connects the PauloBlaze with the outside world.
+A connection to outside world is established by the I/O module.
 It can read and write 8-bit words and address up to 256 channels with an 8-bit \emph{port\_id}.
 Even though the user has two clock cycles to present or read the data, using a register before and after the ports is good practice and helps to meet the performance requirements.
-Various high active strobe signals are asserted during the second cycle of a read or a write \hl{reading or a writing??} operation.
+Various high active strobe signals are asserted during the second cycle of a read or a write operation.

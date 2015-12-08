@@ -1,0 +1,20 @@
+\documentclass{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{float}
+
+% create Program float environment
+\floatstyle{boxed}
+\newfloat{program}{thp}{lop}[section]
+\floatname{program}{Programm}
+
+% syntax for adl
+\input{adl_syntax.tex}
+
+\begin{document}
+\section{PSM Example}
+%\begin{program}
+	\lstinputlisting{../../testcode.psm}
+%	\caption{Testprogramm}
+%\end{program}
+\end{document}

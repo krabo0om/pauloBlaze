@@ -24,38 +24,46 @@ On the basis of the simulation and the usage in a bigger design, it can be said 
 
 \section{Timing}
 \label{sec:timing}
-Several tests were conducted to show the good performance regarding one of the PicoBlazes key aspects: \hl{S/s}peed.
+Several tests were conducted to show the good performance regarding speed, one of the PicoBlazes key aspects.
 The first test scenario is a simple I/O design based the PicoBlaze manual \cite[p.\,72]{KCPSM6} where one can also find the values used in this comparison.
-The frequency of the PauloBlaze was increased step by step until the Xilinx tool \emph{trace} \hl{(? link)} resulted in a timing violation.
-
+The frequency of the PauloBlaze was increased step by step until the Xilinx tool \emph{trace} resulted in a timing violation. Table \ref{tab:timings} presents the measurements.
 \begin{table}[h]
 	\sffamily
-	\centering
-	\captionof{table}{Achievable Speeds}
-	\sisetup{detect-family=true}
+	\captionof{table}{Achievable Speeds$^{1}$ with a simple I/O Design}
 	\label{tab:timings}
-	\begin{tabular}{lS[table-format=1]|S[table-format=3,table-space-text-post = \si{\mega\hertz}]|S[table-format=3,table-space-text-post = \si{\mega\hertz}]|S[table-format=2.1,table-space-text-post = \si{\percent}]}
-		Family		&	{Speed Grade}	&	{PicoBlaze}	&	{PauloBlaze}&	{Slowdown}	\\	\hline
+	\sisetup{detect-family=true}
+	\centering
+	\begin{threeparttable}
+	\begin{tabular}{lS[table-format=1]S[table-format=3,table-space-text-post = \si{\mega\hertz}]S[table-format=3,table-space-text-post = \si{\mega\hertz}]S[table-format=2.1,table-space-text-post = \si{\percent}]}
+	\toprule
+		Family		&	{Speed Grade}	&	{PicoBlaze}	&	{PauloBlaze}&	{Slowdown\tnote{2}}	\\	\midrule
 		Kintex-7	&	-1			&	185\,\si{\mega\hertz}	&	156\,\si{\mega\hertz} 	&	15.7\,\si{\percent}		\\
-					&	-3			&	238\,\si{\mega\hertz}	&	222\,\si{\mega\hertz} 		&	6.7\,\si{\percent}	\\	\hline
-		Virtex-7	&	-3			&	232\,\si{\mega\hertz}	&	222\,\si{\mega\hertz} 		&	4.3\,\si{\percent}	\\	\hline
-		Virtex-6	&	-3			&	238\,\si{\mega\hertz}	&	200\,\si{\mega\hertz} 		&	16.0\,\si{\percent}		\\	\hline
+					&	-3			&	238\,\si{\mega\hertz}	&	222\,\si{\mega\hertz} 		&	6.7\,\si{\percent}	\\	\midrule
+		Virtex-7	&	-3			&	232\,\si{\mega\hertz}	&	222\,\si{\mega\hertz} 		&	4.3\,\si{\percent}	\\	\midrule
+		Virtex-6	&	-3			&	238\,\si{\mega\hertz}	&	200\,\si{\mega\hertz} 		&	16.0\,\si{\percent}		\\	\midrule
 		Spartan-6	&	-1L			&	82 \,\si{\mega\hertz}	&	74\,\si{\mega\hertz} 		&	9.8\,\si{\percent}		\\		
 					&	-3			&	136\,\si{\mega\hertz}	&	114\,\si{\mega\hertz} 		&	16.2\,\si{\percent}		\\
+					\bottomrule
 	\end{tabular}
+	\begin{tablenotes}
+		\small
+		\item[1] \si{\mega\hertz} values provided by the Xilinx tool \emph{trace} after place and route
+		\item[2] slowdown of the PauloBlaze compared to the PicoBlaze
+	\end{tablenotes}
+	\end{threeparttable}
 \end{table}
-
 It is not surprising to get the same speed from two different 7-Series devices because they share the same architecture.
 Also, this architecture and the good speed grade fit the implementation best.
-On the other hand, a Spartan-6 with a low grade less affected than one with a better grade.
+On the other hand, a Spartan-6 with a low grade is less affected than one with a better grade.
 
-The PicoBlaze-Library mentioned in section \ref{sec:verifi} was augmented and tested on the Atlys Board \cite{Atlys}, featuring a Spartan-6 (speed grad -3).
+Another test was conducted using the PicoBlaze-Library mentioned in section \ref{sec:verifi}.
+It was augmented and deployed on the Atlys Board \cite{Atlys}, featuring a Spartan-6 (speed grad -3).
 Both, PicoBlaze and PauloBlaze, were able to meet the timing requirements of \SI{100}{\mega\hertz} in this real world example.
 
 \section{Resource Usage}
 \label{sec:res_use}
 Similar to the timing results the PauloBlaze utilizes more resources than its optimized, but restricted, counterpart as shown below with a few examples.
-The first design was taken from the PicoBlaze Library and implemented on the same Atlys Board \cite{Atlys} \hl{nochmal linken?}.
+The first design was taken from the PicoBlaze Library and implemented on the same Atlys Board.
 It contains a module called SoFPGA featuring extensions like a divider unit for the single processor.
 The \emph{Pico constrained} represents the normal PicoBlaze instantiation whereas all the placement instructions were deleted in the \emph{unconstrained} version.
 Without the directives the tools could place parts of the processor into other modules.
@@ -67,7 +75,7 @@ All values were taken after the Xilinx tool \emph{map} had finished.
 	\sffamily
 	\centering
 	\includegraphics[width=1.0\textwidth]{res_sofpga}
-	\caption{Resource Usage of the surrounding SoFPGA Module}
+	\caption{Resource Usage of the surrounding SoFPGA Module including the processor, dividers, multipliers and more}
 	\label{fig:res_sofpga}
 \end{figure}
 
@@ -75,8 +83,8 @@ All values were taken after the Xilinx tool \emph{map} had finished.
 	\sffamily
 	\centering
 	\sisetup{detect-family=true}
-	\label{tab:res_sofpga}
 	\caption{Resource Usage of the surrounding SoFPGA Module}
+	\label{tab:res_sofpga}
 	\begin{tabular}{l S[table-format=3] S[table-format=3] S[table-format=3] S[table-format=2.1,table-space-text-post = \si{\percent}] S[table-format=3.1,table-space-text-post = \si{\percent}]}
 		\toprule
 		Resource				&	{Pico unconstrained} & {Pico constrained} & {PauloBlaze} & \multicolumn{2}{c}{increase} \\ \midrule
@@ -88,7 +96,7 @@ All values were taken after the Xilinx tool \emph{map} had finished.
 	\end{tabular}
 \end{table}
 
-The differences between the two PicoBlaze versions are most likely caused by the placers behaviour to spread out and use more of the chip when there is enough space left. It is not surprising to see an additional demand of resources because of the PauloBlaze. \hl{vllt noch sagen, dass es nich soo viel ist?} However, the increase, especially to the constrained version, is higher than expected compared to the following measurements.
+The differences between the two PicoBlaze versions seen in figure~\ref{fig:res_sofpga} and table~\ref{tab:res_sofpga} are most likely caused by the placers behaviour to spread out and use more of the chip when there is enough space left. It is not surprising to see an additional demand of resources because of the PauloBlaze. However, the increase, especially to the constrained version, is higher than expected compared to the following measurements.
 
 On basis of the same utilization report a direct look at the single processor is possible. It needs to be pointed out that the report is less precise because of the small number of resources used and the shifting of those between different components.
 
@@ -96,7 +104,7 @@ On basis of the same utilization report a direct look at the single processor is
 	\sffamily
 	\centering
 	\includegraphics[width=1.0\textwidth]{res_mod1}
-	\caption{Resource Usage of an embedded P*Blaze}
+	\caption{Resource Usage of an embedded Pico/PauloBlaze}
 	\label{fig:res_mod}
 \end{figure}
 
@@ -104,7 +112,7 @@ On basis of the same utilization report a direct look at the single processor is
 	\sffamily
 	\centering
 	\sisetup{detect-family=true}
-	\caption{Resource Usage of an embedded P*Blaze}	
+	\caption{Resource Usage of an embedded Pico/PauloBlaze}	
 	\label{tab:res_mod}
 	\begin{tabular}{l S[table-format=3] S[table-format=3] S[table-format=3] S[table-format=2.1,table-space-text-post = \si{\percent}] S[table-format=3.1,table-space-text-post = \si{\percent}]}
 		\toprule
@@ -117,7 +125,7 @@ On basis of the same utilization report a direct look at the single processor is
 	\end{tabular}
 \end{table}
 
-The shifting of resources from one module to another becomes clear when comparing the slice and LUT numbers of the two PicoBlaze versions.
+The shifting of resources from one module to another becomes clear in figure~\ref{fig:res_mod} when comparing the slice and LUT numbers of the two PicoBlaze versions.
 On one hand the unconstrained version shares "its" slices with other components almost doubling the usage, on the other hand \SI{17}{\percent} of the LUTs are not counted.
 The PauloBlaze shows an additional slice usage by 43 or 67.
 This is less than the 100 extra slices suggested by the report of the SoFPGA module.
@@ -125,7 +133,6 @@ This is less than the 100 extra slices suggested by the report of the SoFPGA mod
 To get a precise and reasonable result, the timing sections I/O design was tested with different chip families.
 It is a simple design with only a few extra constructs around the processor.
 The normal constrained PicoPlaze was used and compared to the PauloBlaze.
-
 \begin{table}[h]
 	\sffamily
 	\centering
@@ -141,5 +148,4 @@ The normal constrained PicoPlaze was used and compared to the PauloBlaze.
 		Virtex-7	&&	113		&	83		&&	283		& 82		&&	150.4\,\si{\percent}	& -1.2\,\si{\percent}		\\		\bottomrule
 	\end{tabular}
 \end{table}
-
-Although this additions seem to be significant in percentage, it is a negligible increase regarding the overall utilization from \SI{1.7}{\percent} to \SI{3.1}{\percent} on a medium sized Spartan-6 (XC6SLX75).
+Although the numbers in table~\ref{tab:area} are pointing out a significant addition, it is a negligible increase regarding the overall utilization from \SI{1.7}{\percent} to \SI{3.1}{\percent} on a medium sized Spartan-6 (XC6SLX75).

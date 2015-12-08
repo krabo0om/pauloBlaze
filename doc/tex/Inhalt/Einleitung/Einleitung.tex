@@ -1,20 +1,22 @@
 \chapter{Introduction}
+\label{ch:intro}
 
 Field Programmable Gate Arrays (FPGAs) have always had a great potential for an efficient implementation of parallelizable algorithms.
 Streaming based problems benefit from the low I/O latency and, thanks to the configurable cells, can be mapped very well.
 However, step by step sequences have proven to be difficult. 
 Complex tasks may demand a hybrid solution, configurable logic combined with a dedicated CPU on a single chip like a Xilinx Zynq or an Altera Cyclone.
-State machines are suitable for short sequences and are often used.
+In contrast state machines are suitable for short sequences and are often used.
 But those state machines have practical limits, there is a huge bulk of states, one cannot cope with the number of transitions, more input values, more output signals, a more and more complex implementation leads to more resource usage.
 This problem is not new and the typical solution is a so-called softcore.
-Such a softcore contains the mapping of a CPU model onto the internal FPGA resources and the user can execute ordinary Assembler/C/\hl{whatever} source code.
+Such a softcore contains the mapping of a CPU model onto the internal FPGA resources and the user can execute ordinary Assembler or C source code.
 A popular core is the KCPSM6 also known as PicoBlaze \cite{PicoBlaze}. It is used in many applications like elliptic curve cryptography \cite{ref_elliptic}, a floating-point controller \cite{kadlec2005floating} or a multiprocessor system \cite{ref_paral_exec}.
 Its implementation is utterly compact and with up to \SI{238}{\mega\hertz} very fast, however, because of its direct description of Look-Up Tables (LUTs) it is limited to current Xilinx FPGAs and not easily customizable.
 \\ 
-In this work a processor, called PauloBlaze, \hl{is developed} which is \SI{100}{\percent} compatible to the PicoBlazes ISA and all of the signal timings.
+In this work a processor, called \textit{PauloBlaze}, is developed which is \SI{100}{\percent} compatible to the PicoBlazes ISA and all of the signal timings.
 It should be very easy to replace a PicoBlaze in a current project, to modify this new implementation, or to deploy it without being restricted to particular platforms.
 These benefits should outweigh the speed and area losses.
 \\
-Chapter \ref{ch:impl} gives an overview on the implementation of the single modules and how they work together.
-The resource usage is summarized in chapter \ref{ch:res} and compared to the PicoBlazes.
+This work is structured into four chapters.
+An introduction and motivation is given in chapter~\ref{ch:intro} followed by chapter~\ref{ch:impl}, an overview on the implementation of the single modules and how they work together.
+The resource usage is summarized in chapter~\ref{ch:res} and compared to the PicoBlazes.
 Advantages and compromises of the PauloBlaze are discussed in the last chapter.
