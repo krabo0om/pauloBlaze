@@ -25,7 +25,7 @@ if { [info exists ::origin_dir_loc] } {
 }
 
 # Set the project name
-set _xil_proj_name_ "vivado"
+set _xil_proj_name_ "PauloBlaze"
 
 # Use project name variable, if specified in the tcl shell
 if { [info exists ::user_project_name] } {
@@ -84,7 +84,7 @@ if { $::argc > 0 } {
 set orig_proj_dir "[file normalize "$origin_dir/"]"
 
 # Create project
-create_project ${_xil_proj_name_} ./${_xil_proj_name_} -part xc7vx485tffg1761-2
+create_project ${_xil_proj_name_} ./ -part xc7vx485tffg1761-2
 
 # Set the directory path for the new project
 set proj_dir [get_property directory [current_project]]
@@ -210,13 +210,11 @@ set files [list \
  [file normalize "${origin_dir}/../../testbench/code_loader.vhd"] \
  [file normalize "${origin_dir}/../../testbench/kcpsm6.vhd"] \
  [file normalize "${origin_dir}/../../testbench/tb_lockstep.vhd"] \
- [file normalize "${origin_dir}/../../testbench/tb_pauloB.vhd"] \
 ]
 add_files -norecurse -fileset $obj $files
 
 # Add local files from the original project (-no_copy_sources specified)
 set files [list \
- [file normalize "${origin_dir}/tb_pauloB_behav.wcfg" ]\
  [file normalize "${origin_dir}/tb_lockstep_behav.wcfg" ]\
 ]
 set added_files [add_files -fileset sim_1 $files]
@@ -241,12 +239,6 @@ set file "$origin_dir/../../testbench/tb_lockstep.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
-
-set file "$origin_dir/../../testbench/tb_pauloB.vhd"
-set file [file normalize $file]
-set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
-set_property -name "file_type" -value "VHDL" -objects $file_obj
-
 
 # Set 'sim_1' fileset file properties for local files
 # None
