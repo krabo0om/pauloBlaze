@@ -176,7 +176,6 @@ begin
 			when OP_OUTPUT_SX_SY | OP_OUTPUT_SX_PP =>
 				io_op_out <= '1';
 			when OP_OUTPUTK_KK_P =>
-				io_op_out <= '1';
 				io_kk_en <= '1';
 			when OP_FETCH_SX_SY | OP_FETCH_SX_SS =>
 --				spm_rd <= '1';

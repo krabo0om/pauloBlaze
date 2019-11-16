@@ -93,7 +93,7 @@ begin
 			if (reset = '1') then
 				strobe_o <= '0';
 			else
-				if ((io_op_in or io_op_out) = '1') then
+				if ((io_op_in or io_op_out or io_kk_en) = '1') then
 					strobe_o <= '1';
 				else
 					strobe_o <= '0';
