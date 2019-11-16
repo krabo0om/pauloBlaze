@@ -81,6 +81,8 @@ end decoder;
 
 architecture Behavioral of decoder is
 	
+	signal clk2_reset_sleep : std_logic;
+	signal clk2_reset_reset : std_logic;
 	signal reset_int_o	: std_logic;
 	signal reset_r		: std_logic;
 	signal reg_select_o : std_logic;
@@ -110,6 +112,7 @@ architecture Behavioral of decoder is
 
 begin
 	reset_int	<= reset_int_o;
+	clk2_reset  <= clk2_reset_sleep or clk2_reset_reset;
 	
 	opCode		<= opCode_o;
 	opCode_o	<= instr_used(17 downto 12);
@@ -283,17 +286,17 @@ begin
 					sleep_state <= sleeping;
 					bram_pause <= '1';
 					sleep_int_o <= '1';
-					clk2_reset <= '0';
+					clk2_reset_sleep <= '0';
 				else 
 					sleep_state <= awake;
 					bram_pause <= '0';
 					sleep_int_o <= '0';
-					clk2_reset <= '0';
+					clk2_reset_sleep <= '0';
 				end if;
 			else
 				bram_pause <= '0';
 				sleep_int_o <= '0';
-				clk2_reset <= '0';
+				clk2_reset_sleep <= '0';
 				case sleep_state is
 				when awake =>
 					if (sleep = '1') then
@@ -314,7 +317,7 @@ begin
 					bram_pause <= '1';
 					sleep_int_o <= '1';
 					if (sleep = '0') then
-						clk2_reset <= '1';
+						clk2_reset_sleep <= '1';
 						sleep_state <= dawn;
 					end if;
 				when dawn =>
@@ -332,10 +335,11 @@ begin
 	end process sleep_sm;
 
 
-	rst_state_com_p : process (reset, rst_req, reset_state, clk2) begin
+	rst_state_com_p : process (reset, rst_req, reset_state) begin
 		reset_state_nxt <= reset_state;
 		reset_int_o <= '0';
 		reset_bram_en <= '0';
+		clk2_reset_reset <= '0';
 		case (reset_state) is 
 			when none => 
 				if (reset = '1') then
@@ -344,7 +348,7 @@ begin
 					reset_state_nxt <= holding;
 				end if;
 			when detected =>
-				if (clk2 = '1') then
+				if (reset = '0') then
 					reset_state_nxt <= finishing;
 				end if;
 			when finishing =>
@@ -352,15 +356,12 @@ begin
 				reset_state_nxt <= holding;
 			when holding =>
 				reset_int_o <= '1';
-				if (reset = '0') then
-					reset_state_nxt <= bram_en;
-				end if;
+				clk2_reset_reset <= '1';
+				reset_state_nxt <= bram_en;
 			when bram_en =>
-				reset_bram_en <= '1';
 				reset_int_o <= '1';
-				if (clk2 = '1') then
-					reset_state_nxt <= none;
-				end if;
+				reset_bram_en <= '1';
+				reset_state_nxt <= none;
 		end case;
 	end process rst_state_com_p;
 	
