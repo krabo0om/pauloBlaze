@@ -1,0 +1,4 @@
+*
+!.gitignore
+!create_project.tcl
+!tb_lockstep_behav.wcfg
