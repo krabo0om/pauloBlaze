@@ -62,6 +62,7 @@ ARCHITECTURE behavior OF tb_lockstep IS
 
     -- PicoBlaze Outputs
     signal pico_address : std_logic_vector(11 downto 0);
+    signal pico_instruction : std_logic_vector(17 downto 0) := (others => '0');
     signal pico_bram_enable : std_logic;
     signal pico_out_port : std_logic_vector(7 downto 0);
     signal pico_port_id : std_logic_vector(7 downto 0);
@@ -77,9 +78,10 @@ ARCHITECTURE behavior OF tb_lockstep IS
    signal data : io_data := (x"00", x"AB", x"CD", x"12", x"00");
    signal prog_mem_en : std_logic;
    signal done : std_logic;
-   signal sleep_en : std_logic := '0';
-   signal inter_en : std_logic := '0';
-   signal reset_en : std_logic := '0';
+   signal pico_done : std_logic;
+   signal sleep_en : std_logic := '1';
+   signal inter_en : std_logic := '1';
+   signal reset_en : std_logic := '1';
  
 BEGIN 
 	-- Instantiate the Unit Under Test (UUT)
@@ -112,7 +114,7 @@ BEGIN
                     interrupt_vector => X"300",
                     scratch_pad_memory_size => 64)
       port map(      address => pico_address,
-                 instruction => instruction,
+                 instruction => pico_instruction,
                  bram_enable => pico_bram_enable,
                      port_id => pico_port_id,
                 write_strobe => pico_write_strobe,
@@ -148,7 +150,11 @@ BEGIN
 	inter_static : process 
 	begin
 		if (inter_en = '1') then
-			wait for 499 ns;
+            wait for 490 ns;
+            interrupt <= '1';
+            wait for 3 * clk_period;
+            interrupt <= '0';
+			wait for 875 ns;
 			interrupt <= '1';
 			wait until interrupt_ack = '1';
 			interrupt <= '0';
@@ -164,11 +170,21 @@ BEGIN
 		done => done,
 		rdl => open,
 		clk => clk);
+
+	prog_mem_pico : entity work.code_loader
+	Port map (
+		address => pico_address,
+		instruction => pico_instruction,
+		enable => pico_bram_enable,
+		done => pico_done,
+		rdl => open,
+		clk => clk);
+	
 	
    reset_proc: process
    begin		
 		reset <= '1';
-		wait until done = '1';
+		wait until (done = '1' and pico_done = '1');
 		wait until clk = '0';
 		reset <= '0';
 		if (reset_en = '1') then
@@ -177,6 +193,14 @@ BEGIN
 			wait for 86 ns;
 			reset <= '0';
 		end if;
+		wait for 1337 ns;
+		wait until rising_edge(clk);
+		if (reset_en = '1') then
+            wait for 85 ns;
+            reset <= '1';
+            wait for 35 ns;
+            reset <= '0';
+        end if;		
 		wait;
 	end process;
 

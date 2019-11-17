@@ -89,7 +89,7 @@ begin
 		variable opB_value : unsigned(7 downto 0);
 		variable opA_value : unsigned(7 downto 0);
 		variable result_v : unsigned(8 downto 0);
-		variable partiy_v : std_logic;
+		variable parity_v : std_logic;
 		variable padding : std_logic;
 		variable tmp : std_logic;
 	begin
@@ -111,7 +111,7 @@ begin
 		carry_c <= carry_o;
 		zero_c <= zero_o;
 		result_v := (others => padding);
-		partiy_v := '0';
+		parity_v := '0';
 
 		if (reset = '0') then
 			case opcode is
@@ -184,10 +184,15 @@ begin
 					end if;
  
 					for i in 0 to 7 loop
-						partiy_v := partiy_v xor result_v(i);
+						parity_v := parity_v xor result_v(i);
 					end loop;
-					partiy_v := (partiy_v and not opCode(1)) or (carry_o and opCode(1));
-					carry_c <= partiy_v;
+					if (opCode(1) = '0') then
+						-- TEST
+						carry_c <= parity_v;
+					else
+						-- TESTCY
+						carry_c <= parity_v xor carry_o;
+					end if;
 				when OP_COMPARE_SX_SY | OP_COMPARE_SX_KK | OP_COMPARECY_SX_SY | OP_COMPARECY_SX_KK => 
 					-- opCode(1) == 0 : COMAPRE
 					-- opCode(1) == 1 : COMAPRECY

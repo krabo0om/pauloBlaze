@@ -19,7 +19,6 @@ test_star:
 	COMPARE s1, 01
 	JUMP NZ, error
 	REGBANK A
-	JUMP test_add
 
 test_add:
 	LOAD s0, 01
@@ -40,7 +39,6 @@ test_add:
 	LOAD s0, 00
 	ADD s0, 00
 	JUMP NZ, error		; check for zero flag
-	JUMP test_add_carry
 
 test_add_carry:
 	LOAD s0, FF 
@@ -54,7 +52,24 @@ test_add_carry:
 	ADDCY s0, s1		; s0 = s0 + s1(1) + carry(1)
 	COMPARE s0, 02
 	JUMP NZ, error
-	JUMP test_sub
+
+test_add_zero:
+	LOAD s0, 7B
+	LOAD s1, A2
+	ADD s0, 1A
+	JUMP Z, error
+	JUMP C, error
+	ADDCY s1, 5E
+	JUMP Z, error
+	JUMP NC, error
+	LOAD s0, 7B
+	LOAD s1, A2
+	ADD s0, 85
+	JUMP NC, error
+	JUMP NZ, error
+	ADDCY s1, 5D
+	JUMP NC, error
+	JUMP NZ, error
 
 test_sub:
 	LOAD s0, 0A
@@ -65,21 +80,19 @@ test_sub:
 	SUB s0, s1			; s0 = s0(AB) - s1(0B) = A0
 	COMPARE s0, A0
 	JUMP NZ, error
-	JUMP test_sub_carry
 
 test_sub_carry:
 	LOAD s0, 00
 	SUB s0, 01			; s0 = 255, carry set
 	JUMP NC, error
 	SUBCY s0, FE		; s0 = s0(255) - FE - carry(1) = 0
-	JUMP NZ, error
+	JUMP Z, error
 	LOAD s0, 00
 	SUB s0, 01
 	LOAD s1, 0A
 	SUBCY s0, s1		; s0 = s0(255) - s1(10) - carry(1) = 244
 	COMPARE s0, F4
 	JUMP NZ, error
-	JUMP test_logic
 
 test_logic:
 	LOAD s0, CA
@@ -118,7 +131,31 @@ test_logic:
 	ADD s1, 01			; carry set
 	XOR s0, 01
 	JUMP C, error		; carry was not cleared	
-	JUMP test_shift
+	LOAD s0, 7B			; 14A27B – 14A27B = 000000
+	LOAD s1, A2
+	LOAD s2, 14
+	COMPARE s0, 7B
+	COMPARECY s1, A2
+	COMPARECY s2, 14
+	JUMP NZ, error
+	LOAD s0, 7B
+	LOAD s1, A2
+	COMPARE s0, 7B
+	COMPARECY s1, B9
+	JUMP NC, error
+	JUMP Z, error
+	LOAD s0, CA
+	LOAD s1, 52
+	TEST s0, FF
+	TESTCY s1, FF
+	JUMP Z, error
+	JUMP NC, error
+	LOAD s0, CA
+	LOAD s1, 52
+	TEST s0, 00000100'b
+	TESTCY s1, 00100000'b
+	JUMP NZ, error
+	JUMP C, error
 
 test_shift:
 	LOAD s0, 7F
@@ -159,7 +196,6 @@ test_shift:
     SRX s0
     COMPARE s0, C0
     JUMP NZ, error
-	JUMP test_io
 
 test_io:
 	LOAD s0, 01
@@ -172,7 +208,6 @@ test_io:
 	INPUT s3, 05		; read value on port id 05 into s3
 	INPUT s1, (s4)		; read value on port id 1E into s1
 	OUTPUT s1, 10		; output read value on port id 10
-	JUMP test_spm
 
 test_spm:
 	LOAD s0, 12

@@ -99,10 +99,13 @@ architecture Behavioral of decoder is
 	signal reg_sel_save	: std_logic;
 	signal sxy_addr		: std_logic;
 	
+	signal bram_pause_sleep : std_logic;
+	signal bram_pause_reset : std_logic;
+	
 	type sleep_state_t is (awake, sunset, lights_off, sleeping, dawn, sunrise);
 	signal sleep_state : sleep_state_t;
 	
-	type interrupt_state_t is (none, detected, waiting, stall, intent, interrupting, intend	);
+	type interrupt_state_t is (none, detected, inter_ack, interrupting, int_end);
 	signal inter_state : interrupt_state_t;
 	signal inter_state_nxt : interrupt_state_t;
 
@@ -113,6 +116,7 @@ architecture Behavioral of decoder is
 begin
 	reset_int	<= reset_int_o;
 	clk2_reset  <= clk2_reset_sleep or clk2_reset_reset;
+	bram_pause  <= bram_pause_sleep or bram_pause_reset;
 	
 	opCode		<= opCode_o;
 	opCode_o	<= instr_used(17 downto 12);
@@ -244,25 +248,20 @@ begin
 			end if;
 		when detected => 
 			if (inter_en = '1' and clk2 = '0') then
-				inter_state_nxt <= waiting;
+				inter_state_nxt <= inter_ack;
 			end if;
-		when waiting => 
-			inter_state_nxt <= stall;
-		when stall => 
+		when inter_ack => 
 			instr_used <= (others => '0');
 			preserve_flags_o <= '1';
-			inter_state_nxt <= intent;
-		when intent => 
-			inter_j_o <= '1';
 			interrupt_ack <= '1';
-			instr_used <= (others => '0');
+			inter_j_o <= '1';
 			inter_state_nxt <= interrupting;
 		when interrupting => 
 			if (opCode_o = OP_RETURNI_ENABLE and clk2 = '1') then
-				inter_state_nxt <= intend;
+				inter_state_nxt <= int_end;
 				restore_flags_o <= '1';
 			end if;
-		when intend => 
+		when int_end => 
 			inter_state_nxt <= none;
 		end case;
 	end process inter_state_com_p;
@@ -272,8 +271,10 @@ begin
 			if (reset_int_o = '1') then
 				inter_state <= none;	
 			else 
-				inter_state <= inter_state_nxt;	
-				preserve_flags	<= preserve_flags_o;
+				if (sleep = '0') then 
+					inter_state <= inter_state_nxt;	
+					preserve_flags	<= preserve_flags_o;
+				end if;
 			end if;
 		end if;
 	end process inter_state_clk_p;
@@ -282,19 +283,12 @@ begin
 	sleep_sm : process (clk) begin
 		if (rising_edge(clk)) then
 			if (reset_int_o = '1') then 
-				if (sleep = '1') then
-					sleep_state <= sleeping;
-					bram_pause <= '1';
-					sleep_int_o <= '1';
-					clk2_reset_sleep <= '0';
-				else 
-					sleep_state <= awake;
-					bram_pause <= '0';
-					sleep_int_o <= '0';
-					clk2_reset_sleep <= '0';
-				end if;
+				sleep_state <= awake;
+				bram_pause_sleep <= '0';
+				sleep_int_o <= '0';
+				clk2_reset_sleep <= '0';
 			else
-				bram_pause <= '0';
+				bram_pause_sleep <= '0';
 				sleep_int_o <= '0';
 				clk2_reset_sleep <= '0';
 				case sleep_state is
@@ -304,17 +298,17 @@ begin
 					end if;
 				when sunset =>
 					if (clk2 = '1') then
-						bram_pause <= '1';
+						bram_pause_sleep <= '1';
 						sleep_state <= lights_off;
 					end if;
 				when lights_off =>
-					bram_pause <= '1';
+					bram_pause_sleep <= '1';
 					if (clk2 = '1') then
 						sleep_int_o <= '1';
 						sleep_state <= sleeping;
 					end if;
 				when sleeping =>
-					bram_pause <= '1';
+					bram_pause_sleep <= '1';
 					sleep_int_o <= '1';
 					if (sleep = '0') then
 						clk2_reset_sleep <= '1';
@@ -338,6 +332,7 @@ begin
 	rst_state_com_p : process (reset, rst_req, reset_state) begin
 		reset_state_nxt <= reset_state;
 		reset_int_o <= '0';
+		bram_pause_reset <= '0';
 		reset_bram_en <= '0';
 		clk2_reset_reset <= '0';
 		case (reset_state) is 
@@ -348,13 +343,17 @@ begin
 					reset_state_nxt <= holding;
 				end if;
 			when detected =>
+				bram_pause_reset <= '1';
+				reset_int_o <= '1';
 				if (reset = '0') then
 					reset_state_nxt <= finishing;
 				end if;
 			when finishing =>
+				bram_pause_reset <= '1';
 				reset_int_o <= '1';
 				reset_state_nxt <= holding;
 			when holding =>
+				bram_pause_reset <= '1';
 				reset_int_o <= '1';
 				clk2_reset_reset <= '1';
 				reset_state_nxt <= bram_en;
