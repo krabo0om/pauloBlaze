@@ -12,7 +12,7 @@ If you are using Xilinx ISE or Vivado, two projects are already set up. The ISE 
 ## With ISE
 1. Clone this repository (`git clone https://github.com/krabo0om/pauloBlaze.git`)
 1. Start ISE 14.7
-2. Open the project (`projects/ise14_7/
+2. Open the project (`projects/ise14_7/`)
 
 ## With Vivado
 
