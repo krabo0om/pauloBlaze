@@ -91,9 +91,9 @@ begin
 				rst_req <= '0';
 			else
 				if (bram_pause = '1') then
-					counter <= addr_o & '1';
+					-- counter <= addr_o & '1';
 					jmp_done <= jmp_done;
-					addr_o <= counter(12 downto 1);
+					-- addr_o <= counter(12 downto 1);
 				elsif (ret = '1' and jmp_done <= '0') then
 					p := ('0' & pointer) - 1;
 					if (p = (p'range => '1')) then

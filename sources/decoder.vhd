@@ -102,7 +102,7 @@ architecture Behavioral of decoder is
 	signal bram_pause_sleep : std_logic;
 	signal bram_pause_reset : std_logic;
 	
-	type sleep_state_t is (awake, sunset, lights_off, sleeping, dawn, sunrise);
+	type sleep_state_t is (awake, sleeping, dawn, sunrise);
 	signal sleep_state : sleep_state_t;
 	
 	type interrupt_state_t is (none, detected, inter_ack, interrupting, int_end);
@@ -294,17 +294,6 @@ begin
 				case sleep_state is
 				when awake =>
 					if (sleep = '1') then
-						sleep_state <= sunset;
-					end if;
-				when sunset =>
-					if (clk2 = '1') then
-						bram_pause_sleep <= '1';
-						sleep_state <= lights_off;
-					end if;
-				when lights_off =>
-					bram_pause_sleep <= '1';
-					if (clk2 = '1') then
-						sleep_int_o <= '1';
 						sleep_state <= sleeping;
 					end if;
 				when sleeping =>
@@ -312,10 +301,11 @@ begin
 					sleep_int_o <= '1';
 					if (sleep = '0') then
 						clk2_reset_sleep <= '1';
+						bram_pause_sleep <= '0';
+						sleep_int_o <= '0';
 						sleep_state <= dawn;
 					end if;
 				when dawn =>
-					sleep_int_o <= '1';
 					sleep_state <= sunrise;
 				when sunrise =>
 					sleep_int_o <= '1';
