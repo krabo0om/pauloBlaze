@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="4906500000fs"></ZoomStartTime>
-      <ZoomEndTime time="5018700001fs"></ZoomEndTime>
-      <Cursor1Time time="5000000000fs"></Cursor1Time>
+      <ZoomStartTime time="6086733334fs"></ZoomStartTime>
+      <ZoomEndTime time="6256333335fs"></ZoomEndTime>
+      <Cursor1Time time="6115000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
-      <ValueColumnWidth column_width="142"></ValueColumnWidth>
+      <ValueColumnWidth column_width="138"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="26" />
+   <WVObjectSize size="34" />
    <wvobject fp_name="divider25" type="divider">
       <obj_property name="label">uut signals</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -45,6 +45,10 @@
       <obj_property name="ElementShortName">in_port[7:0]</obj_property>
       <obj_property name="ObjectShortName">in_port[7:0]</obj_property>
    </wvobject>
+   <wvobject type="array" fp_name="/tb_lockstep/pico_instruction">
+      <obj_property name="ElementShortName">pico_instruction[17:0]</obj_property>
+      <obj_property name="ObjectShortName">pico_instruction[17:0]</obj_property>
+   </wvobject>
    <wvobject type="array" fp_name="/tb_lockstep/instruction">
       <obj_property name="ElementShortName">instruction[17:0]</obj_property>
       <obj_property name="ObjectShortName">instruction[17:0]</obj_property>
@@ -60,6 +64,7 @@
    <wvobject type="array" fp_name="/tb_lockstep/address">
       <obj_property name="ElementShortName">address[11:0]</obj_property>
       <obj_property name="ObjectShortName">address[11:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/tb_lockstep/pico_bram_enable">
       <obj_property name="ElementShortName">pico_bram_enable</obj_property>
@@ -89,6 +94,31 @@
    <wvobject type="array" fp_name="/tb_lockstep/port_id">
       <obj_property name="ElementShortName">port_id[7:0]</obj_property>
       <obj_property name="ObjectShortName">port_id[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider72" type="divider">
+      <obj_property name="label">----</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">#808080</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_lockstep/picoblaze/carry_flag">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">carry_flag</obj_property>
+      <obj_property name="ObjectShortName">carry_flag</obj_property>
+      <obj_property name="label">pico_carry</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_lockstep/uut/carry">
+      <obj_property name="ElementShortName">carry</obj_property>
+      <obj_property name="ObjectShortName">carry</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_lockstep/picoblaze/zero_flag">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">zero_flag</obj_property>
+      <obj_property name="ObjectShortName">zero_flag</obj_property>
+      <obj_property name="label">pico_zero</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_lockstep/uut/zero">
+      <obj_property name="ElementShortName">zero</obj_property>
+      <obj_property name="ObjectShortName">zero</obj_property>
    </wvobject>
    <wvobject fp_name="divider72" type="divider">
       <obj_property name="label">----</obj_property>
@@ -126,5 +156,312 @@
    <wvobject type="logic" fp_name="/tb_lockstep/interrupt_ack">
       <obj_property name="ElementShortName">interrupt_ack</obj_property>
       <obj_property name="ObjectShortName">interrupt_ack</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group52">
+      <obj_property name="label">picoBlaze</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/tb_lockstep/picoblaze/internal_reset_value">
+         <obj_property name="ElementShortName">internal_reset_value</obj_property>
+         <obj_property name="ObjectShortName">internal_reset_value</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/picoblaze/internal_reset">
+         <obj_property name="ElementShortName">internal_reset</obj_property>
+         <obj_property name="ObjectShortName">internal_reset</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group53">
+      <obj_property name="label">pauloBlaze</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/reset_int">
+         <obj_property name="ElementShortName">reset_int</obj_property>
+         <obj_property name="ObjectShortName">reset_int</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/reset_bram_en">
+         <obj_property name="ElementShortName">reset_bram_en</obj_property>
+         <obj_property name="ObjectShortName">reset_bram_en</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/clk2_reset">
+         <obj_property name="ElementShortName">clk2_reset</obj_property>
+         <obj_property name="ObjectShortName">clk2_reset</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/reset_int_o">
+         <obj_property name="ElementShortName">reset_int_o</obj_property>
+         <obj_property name="ObjectShortName">reset_int_o</obj_property>
+      </wvobject>
+      <wvobject type="other" fp_name="/tb_lockstep/uut/decoder_inst/reset_state">
+         <obj_property name="ElementShortName">reset_state</obj_property>
+         <obj_property name="ObjectShortName">reset_state</obj_property>
+      </wvobject>
+      <wvobject type="other" fp_name="/tb_lockstep/uut/decoder_inst/reset_state_nxt">
+         <obj_property name="ElementShortName">reset_state_nxt</obj_property>
+         <obj_property name="ObjectShortName">reset_state_nxt</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/clk2">
+         <obj_property name="ElementShortName">clk2</obj_property>
+         <obj_property name="ObjectShortName">clk2</obj_property>
+      </wvobject>
+      <wvobject type="other" fp_name="/tb_lockstep/uut/decoder_inst/sleep_state">
+         <obj_property name="ElementShortName">sleep_state</obj_property>
+         <obj_property name="ObjectShortName">sleep_state</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/bram_pause">
+         <obj_property name="ElementShortName">bram_pause</obj_property>
+         <obj_property name="ObjectShortName">bram_pause</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/clk2_reset_sleep">
+         <obj_property name="ElementShortName">clk2_reset_sleep</obj_property>
+         <obj_property name="ObjectShortName">clk2_reset_sleep</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/sleep_int_o">
+         <obj_property name="ElementShortName">sleep_int_o</obj_property>
+         <obj_property name="ObjectShortName">sleep_int_o</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/jump">
+         <obj_property name="ElementShortName">jump</obj_property>
+         <obj_property name="ObjectShortName">jump</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/inter_j">
+         <obj_property name="ElementShortName">inter_j</obj_property>
+         <obj_property name="ObjectShortName">inter_j</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/inter_en">
+         <obj_property name="ElementShortName">inter_en</obj_property>
+         <obj_property name="ObjectShortName">inter_en</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/decoder_inst/inter_j_o">
+         <obj_property name="ElementShortName">inter_j_o</obj_property>
+         <obj_property name="ObjectShortName">inter_j_o</obj_property>
+      </wvobject>
+      <wvobject type="other" fp_name="/tb_lockstep/uut/decoder_inst/inter_state">
+         <obj_property name="ElementShortName">inter_state</obj_property>
+         <obj_property name="ObjectShortName">inter_state</obj_property>
+      </wvobject>
+      <wvobject type="other" fp_name="/tb_lockstep/uut/decoder_inst/inter_state_nxt">
+         <obj_property name="ElementShortName">inter_state_nxt</obj_property>
+         <obj_property name="ObjectShortName">inter_state_nxt</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/alu_inst/carry_c">
+         <obj_property name="ElementShortName">carry_c</obj_property>
+         <obj_property name="ObjectShortName">carry_c</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/alu_inst/carry_o">
+         <obj_property name="ElementShortName">carry_o</obj_property>
+         <obj_property name="ObjectShortName">carry_o</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/tb_lockstep/uut/alu_inst/carry_i">
+         <obj_property name="ElementShortName">carry_i</obj_property>
+         <obj_property name="ObjectShortName">carry_i</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_lockstep/uut/alu_inst/debug_opA_value">
+         <obj_property name="ElementShortName">debug_opA_value[7:0]</obj_property>
+         <obj_property name="ObjectShortName">debug_opA_value[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_lockstep/uut/alu_inst/debug_opB_value">
+         <obj_property name="ElementShortName">debug_opB_value[7:0]</obj_property>
+         <obj_property name="ObjectShortName">debug_opB_value[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_lockstep/uut/alu_inst/opcode">
+         <obj_property name="ElementShortName">opcode[5:0]</obj_property>
+         <obj_property name="ObjectShortName">opcode[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg">
+         <obj_property name="ElementShortName">reg[31:0][7:0]</obj_property>
+         <obj_property name="ObjectShortName">reg[31:0][7:0]</obj_property>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[31]">
+            <obj_property name="ElementShortName">[31][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[31][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[30]">
+            <obj_property name="ElementShortName">[30][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[30][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[29]">
+            <obj_property name="ElementShortName">[29][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[29][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[28]">
+            <obj_property name="ElementShortName">[28][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[28][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[27]">
+            <obj_property name="ElementShortName">[27][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[27][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[26]">
+            <obj_property name="ElementShortName">[26][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[26][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[25]">
+            <obj_property name="ElementShortName">[25][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[25][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[24]">
+            <obj_property name="ElementShortName">[24][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[24][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[23]">
+            <obj_property name="ElementShortName">[23][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[23][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[22]">
+            <obj_property name="ElementShortName">[22][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[22][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[21]">
+            <obj_property name="ElementShortName">[21][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[21][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[20]">
+            <obj_property name="ElementShortName">[20][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[20][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[19]">
+            <obj_property name="ElementShortName">[19][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[19][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[18]">
+            <obj_property name="ElementShortName">[18][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[18][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[17]">
+            <obj_property name="ElementShortName">[17][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[17][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[16]">
+            <obj_property name="ElementShortName">[16][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[16][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[15]">
+            <obj_property name="ElementShortName">[15][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[15][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[14]">
+            <obj_property name="ElementShortName">[14][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[14][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[13]">
+            <obj_property name="ElementShortName">[13][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[13][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[12]">
+            <obj_property name="ElementShortName">[12][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[12][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[11]">
+            <obj_property name="ElementShortName">[11][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[11][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[10]">
+            <obj_property name="ElementShortName">[10][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[10][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[9]">
+            <obj_property name="ElementShortName">[9][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[9][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[8]">
+            <obj_property name="ElementShortName">[8][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[8][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[7]">
+            <obj_property name="ElementShortName">[7][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[7][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[6]">
+            <obj_property name="ElementShortName">[6][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[6][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[5]">
+            <obj_property name="ElementShortName">[5][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[5][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[4]">
+            <obj_property name="ElementShortName">[4][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[4][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[3]">
+            <obj_property name="ElementShortName">[3][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[2]">
+            <obj_property name="ElementShortName">[2][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[1]">
+            <obj_property name="ElementShortName">[1][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/register_file/reg[0]">
+            <obj_property name="ElementShortName">[0][7:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][7:0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="group" fp_name="group124">
+         <obj_property name="label">pc</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/reset">
+            <obj_property name="ElementShortName">reset</obj_property>
+            <obj_property name="ObjectShortName">reset</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/rst_req">
+            <obj_property name="ElementShortName">rst_req</obj_property>
+            <obj_property name="ObjectShortName">rst_req</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/bram_pause">
+            <obj_property name="ElementShortName">bram_pause</obj_property>
+            <obj_property name="ObjectShortName">bram_pause</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/call">
+            <obj_property name="ElementShortName">call</obj_property>
+            <obj_property name="ObjectShortName">call</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/ret">
+            <obj_property name="ElementShortName">ret</obj_property>
+            <obj_property name="ObjectShortName">ret</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/inter_j">
+            <obj_property name="ElementShortName">inter_j</obj_property>
+            <obj_property name="ObjectShortName">inter_j</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/jump">
+            <obj_property name="ElementShortName">jump</obj_property>
+            <obj_property name="ObjectShortName">jump</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/pc/jmp_addr">
+            <obj_property name="ElementShortName">jmp_addr[11:0]</obj_property>
+            <obj_property name="ObjectShortName">jmp_addr[11:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/pc/address">
+            <obj_property name="ElementShortName">address[11:0]</obj_property>
+            <obj_property name="ObjectShortName">address[11:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/pc/stack">
+            <obj_property name="ElementShortName">stack[29:0][11:0]</obj_property>
+            <obj_property name="ObjectShortName">stack[29:0][11:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/pc/pointer">
+            <obj_property name="ElementShortName">pointer[4:0]</obj_property>
+            <obj_property name="ObjectShortName">pointer[4:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/pc/counter">
+            <obj_property name="ElementShortName">counter[12:0]</obj_property>
+            <obj_property name="ObjectShortName">counter[12:0]</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/jmp_int">
+            <obj_property name="ElementShortName">jmp_int</obj_property>
+            <obj_property name="ObjectShortName">jmp_int</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/tb_lockstep/uut/pc/jmp_done">
+            <obj_property name="ElementShortName">jmp_done</obj_property>
+            <obj_property name="ObjectShortName">jmp_done</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/tb_lockstep/uut/pc/addr_o">
+            <obj_property name="ElementShortName">addr_o[11:0]</obj_property>
+            <obj_property name="ObjectShortName">addr_o[11:0]</obj_property>
+         </wvobject>
+      </wvobject>
    </wvobject>
 </wave_config>

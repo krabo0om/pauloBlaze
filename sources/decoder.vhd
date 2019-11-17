@@ -301,9 +301,12 @@ begin
 					sleep_int_o <= '1';
 					if (sleep = '0') then
 						clk2_reset_sleep <= '1';
-						bram_pause_sleep <= '0';
 						sleep_int_o <= '0';
 						sleep_state <= dawn;
+						
+						if (clk2 = '1') then
+							bram_pause_sleep <= '0';
+						end if;
 					end if;
 				when dawn =>
 					sleep_state <= sunrise;

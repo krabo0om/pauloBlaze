@@ -139,7 +139,7 @@ BEGIN
 	
 	sleeping : process begin
 		if (sleep_en = '1') then
-			wait for 1025 ns;
+			wait for 1035 ns;
 			sleep <= '1';
             wait for 1 * clk_period;
 			sleep <= '0';
