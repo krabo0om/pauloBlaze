@@ -158,7 +158,11 @@ begin
 					end if;
  
 					if (result_v(7 downto 0) = "00000000") then
-						zero_c <= '1';
+						if (opcode = OP_ADDCY_SX_SY or opcode = OP_ADDCY_SX_KK or opcode = OP_SUBCY_SX_SY or opcode = OP_SUBCY_SX_KK) then 
+							zero_c <= zero_o;
+						else
+							zero_c <= '1';
+						end if;
 					else
 						zero_c <= '0';
 					end if;
