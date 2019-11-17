@@ -92,6 +92,7 @@ architecture Behavioral of decoder is
 	signal store		: std_logic;
 	signal inter_en		: std_logic;
 	signal inter_j_o	: std_logic;
+	signal inter_block_regs	: std_logic;
 	signal preserve_flags_o : std_logic;
 	signal restore_flags_o	: std_logic;
 	signal instr_used	: unsigned (17 downto 0);
@@ -135,7 +136,7 @@ begin
 	io_kk_data		<= instr_used(11 downto 4);
 	io_kk_port		<= instr_used(3 downto 0);
 	
-	sleep_int		<= sleep_int_o;
+	sleep_int		<= sleep_int_o or inter_block_regs;
 	inter_j			<= inter_j_o;
 	
 	restore_flags	<= restore_flags_o;
@@ -239,6 +240,7 @@ begin
 		preserve_flags_o <= '0';
 		inter_j_o <= '0';
 		interrupt_ack <= '0';
+		inter_block_regs <= '0';
 		restore_flags_o <= '0';
 		
 		case (inter_state) is
@@ -248,12 +250,14 @@ begin
 			end if;
 		when detected => 
 			if (inter_en = '1' and clk2 = '0') then
+				inter_block_regs <= '1';
 				inter_state_nxt <= inter_ack;
 			end if;
 		when inter_ack => 
 			instr_used <= (others => '0');
 			preserve_flags_o <= '1';
 			interrupt_ack <= '1';
+			inter_block_regs <= '1';
 			inter_j_o <= '1';
 			inter_state_nxt <= interrupting;
 		when interrupting => 
