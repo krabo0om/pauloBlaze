@@ -64,10 +64,10 @@ architecture Behavioral of io_module is
 begin
 	
 	reg_value		<= in_port;
-	read_strobe		<= io_op_in and strobe_o and clk2;
+	read_strobe		<= io_op_in and not clk2;
 	write_strobe	<= io_op_out and strobe_o and clk2;
 	k_write_strobe	<= io_kk_en and strobe_o and clk2;
-	reg_we			<= io_op_in;			-- FIXME!! ???
+	reg_we			<= io_op_in and clk2;
 	
 	out_proc : process (reset, out_data, reg_reg0, reg_reg1, io_kk_en, io_kk_port, io_kk_data, io_op_out_pp) begin		
 		if (reset = '1') then
